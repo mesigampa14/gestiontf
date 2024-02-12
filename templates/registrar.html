@@ -1,0 +1,87 @@
+{% extends 'base.html' %}
+
+{% block content %}
+  <div class="row">
+    <div class="col-md-8 offset-md-2">
+      <form method="POST" class="card card-body ">
+        <h1 class="text-center">Registrar nuevo usuario</h1>
+        {{error}}
+        {% csrf_token %}
+        <h5>El nombre de usuario y la contraseña será la misma que el DNI</h5>
+        <div class="mb-3">
+          <label for="{{form.dni.id_for_label}}">DNI:</label>
+          {{form.dni}}
+          {{form.dni.errors}}
+        </div>
+        <div class="mb-3">
+          <label for="{{form.nombre.id_for_label}}">Nombre:</label>
+          {{form.nombre}}
+          {{form.nombre.errors}}
+        </div>
+        <div class="mb-3">
+          <label for="{{form.apellido.id_for_label}}">Apellido:</label>
+          {{form.apellido}}
+          {{form.apellido.errors}}
+        </div>
+        <div class="mb-3">
+          <label for="{{form.email.id_for_label}}">Email:</label>
+          {{form.email}}
+          {{form.email.errors}}
+        </div>
+        <div class="mb-3">
+          <label for="{{form.nacimiento.id_for_label}}">Fecha de Nacimiento:</label>
+          {{form.nacimiento}}
+          {{form.nacimiento.errors}}
+        </div>
+        <div class="mb-3">
+          <label for="{{form.sexo.id_for_label}}">Sexo:</label>
+          {{form.sexo}}
+          {{form.sexo.errors}}
+        </div>
+        <div class="mb-3">
+          <label for="{{form.domicilio.id_for_label}}">Domicilio:</label>
+          {{form.domicilio}}
+          {{form.domicilio.errors}}
+        </div>
+        <div class="mb-3">
+          <label for="id_perfil-tipo_usuario">Tipo de usuario:</label>
+          <select name="perfil-tipo_usuario" id="id_perfil-tipo_usuario" class="form-select" required="" onchange="tipo_usuario()">
+            <option value="comision">Comisión</option>
+            <option value="docente">Docente</option>
+            <option value="estudiante">Estudiante</option>
+          </select>
+        </div>
+
+        <div class="mb-3" id="matricula" style="display: none">
+          <label for="id_perfil-matricula">Matricula:</label>
+          <input type="text" name="perfil-matricula" id="id_perfil-matricula" class="form-control">
+        </div>
+        <div class="mb-3" id="cuil" style="display: none">
+          <label for="id_perfil-cuil">CUIL:</label>
+          <input type="text" name="perfil-cuil" id="id_perfil-cuil" class="form-control">
+        </div>
+
+        <button class="btn btn-primary">
+          Registrar
+        </button>
+      </form>
+    </div>
+  </div>
+<script>
+  function tipo_usuario(){
+    let tipo_usuario = document.getElementById('id_perfil-tipo_usuario').value;
+    switch(tipo_usuario){
+      case 'docente': document.getElementById('cuil').style.display = 'block';
+                      document.getElementById('matricula').style.display = 'none';
+                      break;
+      case 'estudiante':  document.getElementById('cuil').style.display = 'none';
+                          document.getElementById('matricula').style.display = 'block';
+                          break;
+      case 'comision':  document.getElementById('cuil').style.display = 'none';
+                        document.getElementById('matricula').style.display = 'none';
+                        break;
+    }
+  }
+
+</script>
+{% endblock %}

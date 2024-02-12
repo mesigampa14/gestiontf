@@ -1,0 +1,36 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<section class="card card-body">
+  <div class="titleBtn mb-3">
+    <h1>Detalle de Proyecto</h1>
+      <a class="btn btn-outline-danger heightBtn" href="{% url 'proyecto:lista' %}">
+        {% include "icon/back.html" %}
+        Volver
+      </a>
+  </div>
+  <div class="mb-3">
+    Titulo: <strong>{{proyecto.titulo}}</strong>
+  </div>
+  <div class="mb-3">
+    Descripción: <strong>{{proyecto.descripcion}}</strong>
+  </div>
+  <div class="mb-3">
+    Fecha de presentación: <strong>{{proyecto.presentacion}}</strong>
+  </div>
+  <div class="mb-3">
+    Estudiantes: <strong>{{proyecto.estudiantes}}</strong>
+  </div>
+  <div class="mb-3">
+    Docentes: <strong>{{proyecto.director}}</strong>
+  </div>
+  <div class="mb-3">
+    Archivos:
+    {% if proyecto.archivos %}
+      <a href="{{proyecto.archivos.url}}" target="_blank">Ver Archivo</a>
+    {% else %}
+      <strong>No hay archivo adjunto.</strong>
+    {% endif %}
+  </div>
+</section>
+{% endblock %}

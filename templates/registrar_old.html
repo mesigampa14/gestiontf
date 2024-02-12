@@ -1,0 +1,42 @@
+{% extends 'base.html' %}
+
+{% block content %}
+  <div class="row">
+    <div class="col-md-4 offset-md-4">
+      <form method="POST" class="card card-body ">
+        <h1 class="text-center">Registrar nuevo usuario</h1>
+        {{error}}
+        {% csrf_token %}
+        <div class="mb-3">
+          <label for="username">Usuario:</label>
+          <input type="text" name="username" id="username" class="form-control" placeholder="Nombre de usuario">
+        </div>
+        <div class="mb-3">
+          <label for="password1">Contraseña:</label>
+          <input type="password" name="password1" id="password1" class="form-control" placeholder="Ingresa la contraseña">
+        </div>
+        <div class="mb-3">
+          <label for="password2">Confirma Contraseña:</label>
+          <input type="password" name="password2" id="password2" class="form-control" placeholder="Confirma la contraseña">
+        </div>
+        <hr>
+        <div class="mb-3">
+          <label for="password2">Nombre:</label>
+          <input type="password" name="password2" id="password2" class="form-control" placeholder="Confirma la contraseña">
+        </div>
+        <div class="mb-3">
+          <label for="password2">Apellido:</label>
+          <input type="password" name="password2" id="password2" class="form-control" placeholder="Confirma la contraseña">
+        </div>
+        <div class="mb-3">
+          <label for="password2">Tipo usuario:</label>
+          <input type="password" name="password2" id="password2" class="form-control" placeholder="Confirma la contraseña">
+        </div>
+        {{form}}
+        <button class="btn btn-primary">
+          Registrar
+        </button>
+      </form>
+    </div>
+  </div>
+{% endblock %}

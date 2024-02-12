@@ -1,0 +1,67 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <section class="card card-body">
+      <h1 class="text-center mb-3">Gestión de Trabajos Finales</h1>
+      <p>
+        La aplicación web permite la gestión y seguimiento del estado de los
+        trabajos finales de graduación que realizan los alumnos para obtener el
+        título académico, de la carrera Ingeniería en Informática.
+      </p>
+      <p>
+        Se presenta un sistema automatizado y centralizado de la información de
+        los proyectos, del Informe del Trabajo Final y de las evaluaciones de
+        las dos instancias, así como todo el seguimiento del mismo.
+      </p>
+      <h3 class="mt-5 mb-3">
+        Lista de procesos de gestión y seguimiento de trabajos finales
+      </h3>
+      <div class="list-group">
+        <a class="list-group-item list-group-item-action">
+          <div class="d-flex w-100 justify-content-between">
+            <h5 class="mb-1">Presentación del proyecto</h5>
+          </div>
+        </a>
+        <a class="list-group-item list-group-item-action">
+          <div class="d-flex w-100 justify-content-between">
+            <h5 class="mb-1">
+              Evaluación formal realizado por la Comisión de Seguimiento de
+              Trabajo Final (CSTF)
+            </h5>
+          </div>
+        </a>
+        <a class="list-group-item list-group-item-action">
+          <div class="d-flex w-100 justify-content-between">
+            <h5 class="mb-1">
+              Evaluación del proyecto por un tribunal evaluador
+            </h5>
+          </div>
+        </a>
+        <a class="list-group-item list-group-item-action">
+          <div class="d-flex w-100 justify-content-between">
+            <h5 class="mb-1">
+              Presentación del Borrador del Informe de Trabajo Final (BITF)
+            </h5>
+          </div>
+        </a>
+        <a class="list-group-item list-group-item-action">
+          <div class="d-flex w-100 justify-content-between">
+            <h5 class="mb-1">
+              Evaluación del Borrador del Informe de Trabajo Final
+            </h5>
+          </div>
+        </a>
+        <a class="list-group-item list-group-item-action">
+          <div class="d-flex w-100 justify-content-between">
+            <h5 class="mb-1">Defensa del Trabajo Final</h5>
+          </div>
+        </a>
+      </div>
+      {% if not user.is_authenticated %}
+      <div class="text-center py-3">
+        <a class="btn btn-primary" href="{% url 'login' %}">Iniciar Sesión</a>
+      </div>
+      {% endif %}
+    </section>
+
+{% endblock %}

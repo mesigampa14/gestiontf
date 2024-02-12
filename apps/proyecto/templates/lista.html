@@ -1,0 +1,50 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<section class="card card-body">
+  <div class="titleBtn mb-3">
+    <h1>Listado de Proyectos</h1>
+      <a class="btn btn-outline-success heightBtn" href="{% url 'proyecto:nuevo' %}">
+        {% include "icon/plus.html" %}
+        Crear nuevo
+      </a>
+  </div>
+  {% if messages %}
+    <ul class="messages">
+        {% for message in messages %}
+            <li class="{{ message.tags }}">{{ message }}</li>
+        {% endfor %}
+    </ul>
+  {% endif %}
+  <table class="table table-striped table-hover">
+  <thead>
+    <tr>
+      <th scope="col">#</th>
+      <th scope="col">Titulo</th>
+      <th scope="col">Fecha</th>
+      <th scope="col">Estado</th>
+      <th scope="col">Acción</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% if proyectos %}
+      {% for proyecto in proyectos %}
+      <tr>
+        <th scope="row">{{proyecto.id}}</th>
+        <td>{{proyecto.titulo}}</td>
+        <td>{{proyecto.presentacion}}</td>
+        <td>{{proyecto.estado}}</td>
+        <td>
+          <a class="btn btn-primary" href="{% url 'proyecto:ver' proyecto.id %}">Abrir</a>
+        </td>
+      </tr>
+      {% endfor %}
+    {% else %}
+      <tr>
+        <th scope="row" colspan="5" class="text-center">No se encontraron registros</th>
+      </tr>
+    {% endif %}
+  </tbody>
+</table>
+</section>
+{% endblock %}
