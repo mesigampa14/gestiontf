@@ -2,10 +2,21 @@
 
 {% block content %}
   <div class="row">
-    <div class="col-md-8 offset-md-2">
-      <form method="POST" class="card card-body ">
-        <h1 class="text-center">Registrar nuevo usuario</h1>
-        {{error}}
+    <div class="col-md-8 offset-md-2 card card-body">
+      <h1 class="text-center">Registrar nuevo usuario</h1>
+      {% if message %}
+        <div class="alert alert-success" role="alert">{{ message }}</div>
+        ¿Desea registrar un nuevo usuario?
+
+        <a href="{% url 'registrarme' %}" class="btn btn-primary">
+          Continuar
+        </a>
+      {% else %}
+
+      <form method="POST">
+      {% if error %}
+        <div class="alert alert-danger" role="alert">{{ error }}</div>
+      {% endif %}
         {% csrf_token %}
         <h5>El nombre de usuario y la contraseña será la misma que el DNI</h5>
         <div class="mb-3">
@@ -65,6 +76,7 @@
           Registrar
         </button>
       </form>
+      {% endif %}
     </div>
   </div>
 <script>

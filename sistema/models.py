@@ -16,7 +16,7 @@ class Perfil(models.Model):
     )
 
     user = models.OneToOneField(User, on_delete=models.CASCADE)
-    dni = models.IntegerField()
+    dni = models.PositiveIntegerField()
     nombre = models.CharField(max_length=250)
     apellido = models.CharField(max_length=250)
     email = models.EmailField()
@@ -26,7 +26,7 @@ class Perfil(models.Model):
     tipo_usuario = models.CharField(max_length=15, choices=USUARIO_OPCIONES)
 
     def __str__(self):
-        return f'{self.user.username} - {self.tipo_usuario}'
+        return f'{self.user.username} - {self.apellido}, {self.nombre} ({self.tipo_usuario})'
 
 
 class Estudiante(models.Model):
@@ -34,12 +34,12 @@ class Estudiante(models.Model):
     matricula = models.IntegerField()
 
     def __str__(self):
-        return f'{self.user.user.username} - {self.user.apellido}, {self.user.nombre} ({self.matricula})'
+        return f'{self.user.user.username} - {self.user.apellido}, {self.user.nombre} (Matricula: {self.matricula})'
 
 
 class Docente(models.Model):
     user = models.OneToOneField(Perfil, on_delete=models.CASCADE)
-    cuil = models.IntegerField()
+    cuil = models.BigIntegerField()
 
     def __str__(self):
         return f'{self.user.user.username} - {self.user.apellido}, {self.user.nombre}'
