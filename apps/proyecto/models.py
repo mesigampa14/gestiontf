@@ -8,8 +8,6 @@ class Proyecto(models.Model):
     titulo = models.CharField(max_length=300)
     descripcion = models.TextField()
     presentacion = models.DateField(null=True, blank=True)
-    estudiantes = models.ManyToManyField(Estudiante)
-    director = models.ManyToManyField(Docente)
     archivos = models.FileField(upload_to='apps/proyecto/archivos/', null=True, blank=True)
 
     def __str__(self):
@@ -21,19 +19,29 @@ class Archivo(models.Model):
     nombre = models.CharField(max_length=100)
 
 
-class Director(models.Model):
+class ProyectoDocente(models.Model):
     CARGO = (
         ('director', 'Director'),
         ('co_director', 'Co-Director'),
         ('asesor', 'Asesor'),
     )
-    docente = models.ManyToManyField(Docente)
-    cargo = models.CharField(max_length=250, )
-    fecha_alta = models.DateTimeField(auto_created=True)
+    proyecto = models.ForeignKey(Proyecto, on_delete=models.CASCADE, default=None)
+    docente = models.ForeignKey(Docente, on_delete=models.CASCADE, default=None)
+    cargo = models.CharField(max_length=25, choices=CARGO)
+    fecha_alta = models.DateTimeField(auto_now_add=True)
     fecha_baja = models.DateTimeField(auto_now=True)
+    activo = models.BooleanField(default=True)
+
+    def __str__(self):
+        return f'{self.proyecto} / {self.docente}'
 
 
-class Estudiantes(models.Model):
-    estudiante = models.ManyToManyField(Estudiante)
-    fecha_alta = models.DateTimeField(auto_created=True)
+class ProyectoEstudiante(models.Model):
+    proyecto = models.ForeignKey(Proyecto, on_delete=models.CASCADE, default=None)
+    estudiante = models.ForeignKey(Estudiante, on_delete=models.CASCADE, default=None)
+    fecha_alta = models.DateTimeField(auto_now_add=True)
     fecha_baja = models.DateTimeField(auto_now=True)
+    activo = models.BooleanField(default=True)
+
+    def __str__(self):
+        return f'{self.proyecto} / {self.estudiante}'

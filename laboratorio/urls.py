@@ -21,7 +21,7 @@ from sistema import views
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', views.home, name='inicio'),
-    path('registrarme/', views.signup, name='registrarme'),
+    path('registrar/', views.signup, name='registrarme'),
     path('login/', views.signin, name='login'),
     path('logout/', views.cerrar_sesion, name='logout'),
     path('proyecto/', include('apps.proyecto.urls', namespace='proyecto')),

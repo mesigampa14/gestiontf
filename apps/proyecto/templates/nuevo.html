@@ -29,20 +29,27 @@
           {{form.presentacion.error}}
         </div>
         <div class="mb-3">
-          <label for="{{ form.estudiantes.id_for_label }}">Estudiantes:</label>
-          {{form.estudiantes}}
-          {{form.estudiantes.error}}
-        </div>
-        <div class="mb-3">
-          <label for="{{ form.director.id_for_label }}">Docentes:</label>
-          {{form.director}}
-          {{form.director.error}}
-        </div>
-        <div class="mb-3">
           <label for="{{ form.archivos.id_for_label }}">Archivos:</label>
           {{form.archivos}}
           {{form.archivos.error}}
         </div>
+        <div class="mb-3">
+          <label for="estudiantes">Estudiantes:</label>
+          {{form_estud.estudiante}}
+        </div>
+        <div class="mb-3">
+          Director
+          {{form_director.docente}}
+        </div>
+        <div class="mb-3">
+          Co-Director
+          {{form_codirector.docente}}
+        </div>
+        <div class="mb-3">
+          Asesor
+          {{form_asesor.docente}}
+        </div>
+
 
         <button class="btn btn-success">
           {% include "icon/save.html" %}

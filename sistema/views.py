@@ -14,12 +14,7 @@ def home(request):
 
 @login_required
 def signup(request):
-    form_perfil = PerfilForm(prefix='perfil')
-    if request.method == 'GET':
-        return render(request, 'registrar.html', {
-            'form': form_perfil
-        })
-    else:
+    if request.method == 'POST':
         form_perfil = PerfilForm(request.POST, prefix='perfil')
         if form_perfil.is_valid():
             try:
@@ -29,8 +24,6 @@ def signup(request):
                 perfil_instance = form_perfil.save(commit=False)
                 perfil_instance.user = user
                 perfil_instance.save()
-
-                # revisar que no se puede guardar el tamaño del cuil
 
                 if request.POST['perfil-tipo_usuario'] == 'estudiante':
                     form_estudiante = EstudianteForm(request.POST, prefix='perfil')
@@ -46,13 +39,12 @@ def signup(request):
                     docente_instance.user = perfil_instance
                     docente_instance.save()
 
-                #messages.success(request, 'Se ha agregado al estudiante correctamente.')
-                return redirect(request, 'registrar.html', {
-                    'error': 'Se ha agregado al estudiante correctamente.'
-                })
-                #login(request, user)
-                #return redirect('inicio')
+                return render(request, 'registrar.html', {
+                        'message': 'Se ha agregado al estudiante correctamente.'
+                    })
+
             except:
+                print(form_perfil)
                 return render(request, 'registrar.html', {
                     'form': form_perfil,
                     'error': 'El usuario ya existe'
@@ -60,8 +52,13 @@ def signup(request):
         else:
             return render(request, 'registrar.html', {
                 'form': form_perfil,
-                'error': 'algo ha pasao compadre'
+                'error': 'Ingrese los datos correctamente'
             })
+    else:
+        form_perfil = PerfilForm(prefix='perfil')
+        return render(request, 'registrar.html', {
+            'form': form_perfil
+        })
 
 
 def signin(request):

@@ -1,13 +1,13 @@
 from django import forms
-from django.forms import DateInput, TextInput, Textarea
+from django.forms import DateInput, TextInput, Textarea, SelectMultiple
 
-from apps.proyecto.models import Proyecto
+from apps.proyecto.models import Proyecto, ProyectoEstudiante, ProyectoDocente
 
 
 class ProyectoForm(forms.ModelForm):
     class Meta:
         model = Proyecto
-        fields = ('titulo', 'descripcion', 'presentacion', 'estudiantes', 'director', 'archivos')
+        fields = ('titulo', 'descripcion', 'presentacion', 'archivos')
 
         widgets = {
             'presentacion': DateInput(format='%Y-%m-%d', attrs={'type': 'date'}),
@@ -17,3 +17,19 @@ class ProyectoForm(forms.ModelForm):
                 'class': 'form-control'
             }),
         }
+
+
+class ProyectoEstudianteForm(forms.ModelForm):
+    class Meta:
+        model = ProyectoEstudiante
+        fields = ('estudiante',)
+
+        widgets = {
+            'estudiante': SelectMultiple(),
+        }
+
+
+class ProyectoDocenteForm(forms.ModelForm):
+    class Meta:
+        model = ProyectoDocente
+        fields = ('docente',)
