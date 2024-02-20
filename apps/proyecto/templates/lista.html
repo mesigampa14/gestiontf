@@ -27,15 +27,15 @@
     </tr>
   </thead>
   <tbody>
-    {% if proyectos %}
-      {% for proyecto in proyectos %}
+    {% if movimientos %}
+      {% for movimiento in movimientos %}
       <tr>
-        <th scope="row">{{proyecto.id}}</th>
-        <td>{{proyecto.titulo}}</td>
-        <td>{{proyecto.presentacion}}</td>
-        <td>{{proyecto.estado}}</td>
+        <th scope="row">{{movimiento.proyecto.id}}</th>
+        <td>{{movimiento.proyecto.titulo}}</td>
+        <td>{{movimiento.proyecto.presentacion|date:"d-m-Y"}}</td>
+        <td>{{movimiento.get_etapa_display}} - {{movimiento.get_estado_display}}</td>
         <td>
-          <a class="btn btn-primary" href="{% url 'proyecto:ver' proyecto.id %}">Abrir</a>
+          <a class="btn btn-primary" href="{% url 'proyecto:ver' movimiento.proyecto.id %}">Abrir</a>
         </td>
       </tr>
       {% endfor %}

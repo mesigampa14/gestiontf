@@ -1,5 +1,5 @@
 from django import forms
-from django.forms import DateInput, TextInput, Textarea, SelectMultiple
+from django.forms import DateInput, TextInput, Textarea, Select
 
 from apps.proyecto.models import Proyecto, ProyectoEstudiante, ProyectoDocente
 
@@ -25,7 +25,7 @@ class ProyectoEstudianteForm(forms.ModelForm):
         fields = ('estudiante',)
 
         widgets = {
-            'estudiante': SelectMultiple(),
+            'estudiante': Select(),
         }
 
 

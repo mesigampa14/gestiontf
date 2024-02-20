@@ -1,7 +1,7 @@
 from django import forms
 from django.forms import DateInput, TextInput
 
-from sistema.models import Perfil, Estudiante, Docente
+from apps.sistema.models import Perfil, Estudiante, Docente
 
 
 class PerfilForm(forms.ModelForm):

@@ -3,6 +3,8 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from django.urls import reverse
 
+from apps.movimiento.form import MovimientoForm
+from apps.movimiento.models import Movimiento
 from apps.proyecto.form import ProyectoForm, ProyectoEstudianteForm, ProyectoDocenteForm
 from apps.proyecto.models import Proyecto
 
@@ -11,15 +13,16 @@ from apps.proyecto.models import Proyecto
 
 @login_required
 def proyecto_lista(request):
-    proyectos = Proyecto.objects.all().order_by('-id')
+    movimientos = Movimiento.objects.all().order_by('-id')
     return render(request, 'lista.html', {
-        'proyectos': proyectos
+        'movimientos': movimientos,
     })
 
 
 @login_required
 def proyecto_nuevo(request):
     if request.method == 'POST':
+        print(request.POST)
         form_proyecto = ProyectoForm(request.POST, request.FILES, prefix='')
 
         if form_proyecto.is_valid():
@@ -48,6 +51,15 @@ def proyecto_nuevo(request):
             docente_instance.cargo = 'asesor'
             docente_instance.save()
 
+            form_mov = MovimientoForm(request.POST, prefix='mov')
+            print(form_mov)
+            movimiento_instance = form_mov.save(commit=False)
+            movimiento_instance.proyecto = proyecto_instance
+            movimiento_instance.etapa = 'presentacion'
+            movimiento_instance.estado = 'pendiente'
+            print(movimiento_instance)
+            movimiento_instance.save()
+
             messages.success(request, 'Se ha registrado el proyecto correctamente.')
             return redirect(reverse('proyecto:lista'))
         else:
@@ -60,6 +72,7 @@ def proyecto_nuevo(request):
         form_director = ProyectoDocenteForm(prefix='director')
         form_codirector = ProyectoDocenteForm(prefix='codirector')
         form_asesor = ProyectoDocenteForm(prefix='asesor')
+        form_movimiento = MovimientoForm(prefix='mov')
 
         return render(request, 'nuevo.html', {
             'form': form_proyecto,
@@ -67,11 +80,13 @@ def proyecto_nuevo(request):
             'form_director': form_director,
             'form_codirector': form_codirector,
             'form_asesor': form_asesor,
+            'form_mov': form_movimiento,
         })
 
 
 def proyecto_ver(request, proy_id):
     proyecto = get_object_or_404(Proyecto, pk=proy_id)
+    print(proyecto)
     return render(request, 'ver.html', {
         'proyecto': proyecto
     })

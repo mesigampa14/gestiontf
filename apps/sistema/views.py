@@ -4,7 +4,7 @@ from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth.models import User
 from django.contrib.auth import login, logout, authenticate
 
-from sistema.form import PerfilForm, EstudianteForm, DocenteForm
+from apps.sistema.form import PerfilForm, EstudianteForm, DocenteForm
 
 
 # Create your views here.
