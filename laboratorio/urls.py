@@ -24,5 +24,8 @@ urlpatterns = [
     path('registrar/', views.signup, name='registrarme'),
     path('login/', views.signin, name='login'),
     path('logout/', views.cerrar_sesion, name='logout'),
+    path('buscarEstudiante/', views.buscarEstudiante, name='buscarEstudiante'),
+    path('buscarDocente/', views.buscarDocente, name='buscarDocente'),
     path('proyecto/', include('apps.proyecto.urls', namespace='proyecto')),
+    path('movimiento/', include('apps.movimiento.urls', namespace='movimiento')),
 ]

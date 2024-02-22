@@ -2,20 +2,21 @@
 
 {% block content %}
 <section class="card card-body">
-  <div class="titleBtn mb-3">
+
+  <div class="d-flex justify-content-between">
     <h1>Listado de Proyectos</h1>
-      <a class="btn btn-outline-success heightBtn" href="{% url 'proyecto:nuevo' %}">
-        {% include "icon/plus.html" %}
-        Crear nuevo
-      </a>
+    <a class="btn btn-outline-success heightBtn" href="{% url 'proyecto:nuevo' %}" style="height: 38px">
+      {% include "icon/plus.html" %}
+      Crear nuevo
+    </a>
   </div>
+
   {% if messages %}
-  {% for message in messages %}
-  <div class="alert alert-{{ message.tags }}" role="alert">{{ message }}</div>
-  {% endfor %}
-
-
+    {% for message in messages %}
+      <div class="alert alert-{{ message.tags }}" role="alert">{{ message }}</div>
+    {% endfor %}
   {% endif %}
+
   <table class="table table-striped table-hover">
   <thead>
     <tr>
@@ -27,15 +28,16 @@
     </tr>
   </thead>
   <tbody>
-    {% if movimientos %}
-      {% for movimiento in movimientos %}
+    {% if proyectos %}
+      {% for proyecto in proyectos %}
+
       <tr>
-        <th scope="row">{{movimiento.proyecto.id}}</th>
-        <td>{{movimiento.proyecto.titulo}}</td>
-        <td>{{movimiento.proyecto.presentacion|date:"d-m-Y"}}</td>
-        <td>{{movimiento.get_etapa_display}} - {{movimiento.get_estado_display}}</td>
+        <th scope="row">{{proyecto.proyecto.id}}</th>
+        <td>{{proyecto.proyecto.titulo}}</td>
+        <td>{{proyecto.proyecto.presentacion|date:"d-m-Y"}}</td>
+        <td>{{proyecto.get_etapa_display}} - {{proyecto.get_estado_display}}</td>
         <td>
-          <a class="btn btn-primary" href="{% url 'proyecto:ver' movimiento.proyecto.id %}">Abrir</a>
+          <a class="btn btn-primary" href="{% url 'proyecto:ver' proyecto.proyecto.id %}">Abrir</a>
         </td>
       </tr>
       {% endfor %}

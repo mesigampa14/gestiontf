@@ -5,6 +5,7 @@ from django.contrib.auth.models import User
 from django.contrib.auth import login, logout, authenticate
 
 from apps.sistema.form import PerfilForm, EstudianteForm, DocenteForm
+from apps.sistema.models import Estudiante, Docente
 
 
 # Create your views here.
@@ -81,3 +82,25 @@ def signin(request):
 def cerrar_sesion(request):
     logout(request)
     return redirect('inicio')
+
+
+def buscarEstudiante(request):
+    if 'q' in request.GET:
+        query = request.GET ['q']
+        estudiantes = Estudiante.objects.filter(matricula__icontains=query)
+    else:
+        estudiantes = Estudiante.objects.all()
+    return render(request, 'buscarEstudiantes.html', {
+        'estudiantes': estudiantes,
+    })
+
+
+def buscarDocente(request):
+    if 'q' in request.GET:
+        query = request.GET ['q']
+        docentes = Docente.objects.filter(cuil__icontains=query)
+    else:
+        docentes = Docente.objects.all()
+    return render(request, 'buscarDocentes.html', {
+        'docentes': docentes,
+    })
