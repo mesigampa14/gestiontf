@@ -10,8 +10,8 @@ class ProyectoForm(forms.ModelForm):
         fields = ('titulo', 'descripcion', 'presentacion', 'archivos')
 
         widgets = {
-            'presentacion': DateInput(format='%Y-%m-%d', attrs={'type': 'date'}),
-            'titulo': TextInput(attrs={'placeholder': 'Ingrese el titulo del proyecto'}),
+            'presentacion': DateInput(format='%Y-%m-%d', attrs={'type': 'date', 'class': 'form-control'}),
+            'titulo': TextInput(attrs={'placeholder': 'Ingrese el titulo del proyecto', 'class': 'form-control'}),
             'descripcion': Textarea(attrs={
                 'placeholder': 'Ingrese la descripcion',
                 'class': 'form-control'

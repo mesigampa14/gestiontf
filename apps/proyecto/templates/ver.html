@@ -1,10 +1,50 @@
 {% extends 'base.html' %}
 
 {% block content %}
+
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+  <script>
+    $(document).ready(function() {
+      $('#estudiante-busqueda').submit(function(event) {
+        event.preventDefault();
+        var query = $('#est_busqueda').val();
+        $.ajax({
+          type: 'GET',
+          url: '{% url "buscarEstudiante" %}',
+          data: {
+            'q': query
+          },
+          success: function(data) {
+            $('#estudiante_resultados').html(data);
+          }
+        });
+      });
+    });
+
+
+    $(document).ready(function() {
+      $('#docente-busqueda').submit(function(event) {
+        event.preventDefault();
+        var query = $('#doc_busqueda').val();
+        $.ajax({
+          type: 'GET',
+          url: '{% url "buscarDocente" %}',
+          data: {
+            'q': query
+          },
+          success: function(data) {
+            $('#docente_resultados').html(data);
+          }
+        });
+      });
+    });
+  </script>
+
+
 <section class="card card-body">
-  <div class="titleBtn mb-3">
+  <div class="d-flex justify-content-between">
     <h1>Detalle de Proyecto</h1>
-      <a class="btn btn-outline-danger heightBtn" href="{% url 'proyecto:lista' %}">
+      <a class="btn btn-outline-danger" href="{% url 'proyecto:lista' %}" style="height: 38px;">
         {% include "icon/back.html" %}
         Volver
       </a>
@@ -16,13 +56,7 @@
     Descripción: <strong>{{proyecto.descripcion}}</strong>
   </div>
   <div class="mb-3">
-    Fecha de presentación: <strong>{{proyecto.presentacion}}</strong>
-  </div>
-  <div class="mb-3">
-    Estudiantes: <strong>{{proyecto.estudiantes}}</strong>
-  </div>
-  <div class="mb-3">
-    Docentes: <strong>{{proyecto.director}}</strong>
+    Fecha de presentación: <strong>{{proyecto.presentacion|date:"d-m-Y"}}</strong>
   </div>
   <div class="mb-3">
     Archivos:
@@ -32,5 +66,210 @@
       <strong>No hay archivo adjunto.</strong>
     {% endif %}
   </div>
+  <div class="mb-3">
+    Etapa Actual: <strong>{{ actual.get_etapa_display }}</strong>
+  </div>
+  <div class="mb-3">
+    Estado Actual: <strong>{{ actual.get_estado_display }}</strong>
+  </div>
+  <hr/>
+
+  <button class="btn btn-outline-primary mb-3" type="button" data-bs-toggle="collapse" data-bs-target="#collapseExample" aria-expanded="false" aria-controls="collapseExample">
+    Información de los estudiantes
+  </button>
+  <div class="collapse" id="collapseExample">
+
+  <div class="d-flex justify-content-between">
+    <span>Estudiantes:</span>
+    <button type="button" class="btn btn-outline-success heightBtn" data-bs-toggle="modal" data-bs-target="#estudianteModal">
+      {% include "icon/plus.html" %}
+      Agregar
+    </button>
+  </div>
+  <!-- Modal -->
+  <div class="modal fade" id="estudianteModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h1 class="modal-title fs-5" id="exampleModalLabel">Listado de estudiantes</h1>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <form id="estudiante-busqueda">
+              <input type="text" id="est_busqueda" name="q" placeholder="Buscar por Matrícula">
+              <input type="submit" value="Buscar">
+          </form>
+
+          <div id="estudiante_resultados">
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="mb-3">
+  <table class="table table-striped table-hover">
+  <thead>
+    <tr>
+      <th scope="col">Apellido y Nombre</th>
+      <th scope="col">DNI</th>
+      <th scope="col">Matricula</th>
+      <th scope="col">Estado</th>
+      <th scope="col">Acciones</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% if proy_estu %}
+      {% for estudiante in proy_estu %}
+      <tr>
+      <td>{{ estudiante.estudiante.user.apellido }}, {{ estudiante.estudiante.user.nombre }}</td>
+      <td>{{ estudiante.estudiante.user.dni }}</td>
+      <td>{{ estudiante.estudiante.matricula }}</td>
+      <td>{{ estudiante.activo }}</td>
+      <td>{{ estudiante.fecha_alta|date:"d-m-Y H:i:s" }}</td>
+      </tr>
+      {% endfor %}
+    {% else %}
+      <tr>
+        <th scope="row" colspan="4" class="text-center">No se encontraron registros</th>
+      </tr>
+    {% endif %}
+  </tbody>
+  </table>
+  </div>
+</div>
+
+  <button class="btn btn-outline-primary mb-3" type="button" data-bs-toggle="collapse" data-bs-target="#collapseDocentes" aria-expanded="false" aria-controls="collapseExample">
+    Información de los docentes
+  </button>
+  <div class="collapse" id="collapseDocentes">
+  <div class="d-flex justify-content-between">
+    <span>Docentes:</span>
+    <button type="button" class="btn btn-outline-success heightBtn" data-bs-toggle="modal" data-bs-target="#docenteModal">
+      {% include "icon/plus.html" %}
+      Agregar
+    </button>
+  </div>
+  <div class="modal fade" id="docenteModal" tabindex="-1" aria-labelledby="docenteModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h1 class="modal-title fs-5" id="docenteModalLabel">Listado de docentes</h1>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <form id="docente-busqueda">
+              <input type="text" id="doc_busqueda" name="q" placeholder="Buscar por CUIL">
+              <input type="submit" value="Buscar">
+          </form>
+
+          <div id="docente_resultados">
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="mb-3">
+  <table class="table table-striped table-hover">
+  <thead>
+    <tr>
+      <th scope="col">Apellido y Nombre</th>
+      <th scope="col">CUIL</th>
+      <th scope="col">Cargo</th>
+      <th scope="col">Estado</th>
+      <th scope="col">Acciones</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% if proy_estu %}
+      {% for docente in proy_docen %}
+      <tr>
+      <td>{{ docente.docente.user.apellido }}, {{ docente.docente.user.nombre }}</td>
+      <td>{{ docente.docente.cuil }}</td>
+      <td>{{ docente.get_cargo_display }}</td>
+      <td>{{ docente.activo }}</td>
+      <td>{{ docente.fecha_alta|date:"d-m-Y H:i:s" }}</td>
+      </tr>
+      {% endfor %}
+    {% else %}
+      <tr>
+        <th scope="row" colspan="4" class="text-center">No se encontraron registros</th>
+      </tr>
+    {% endif %}
+  </tbody>
+  </table>
+  </div>
+</div>
+
+  <button class="btn btn-outline-primary mb-3" type="button" data-bs-toggle="collapse" data-bs-target="#collapseMovimientos" aria-expanded="false" aria-controls="collapseExample">
+    Información de los movimientos
+  </button>
+  <div class="collapse" id="collapseMovimientos">
+  <table class="table table-striped table-hover">
+  <thead>
+    <tr>
+      <th scope="col">Etapa</th>
+      <th scope="col">Estado</th>
+      <th scope="col">Fecha y Hora</th>
+      <th scope="col">Observación</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% if movimientos %}
+      {% for movimiento in movimientos %}
+      <tr>
+      <td>{{ movimiento.get_etapa_display }}</td>
+      {% if movimiento.estado == 'rechazado' %}
+        <td><button class="btn btn-danger">{{ movimiento.get_estado_display }}</button></td>
+      {% elif movimiento.estado == 'observado' %}
+        <td><button class="btn btn-warning">{{ movimiento.get_estado_display }}</button></td>
+      {% elif movimiento.estado == 'aceptado' %}
+        <td><button class="btn btn-success">{{ movimiento.get_estado_display }}</button></td>
+      {% else %}
+        <td><button class="btn btn-primary">{{ movimiento.get_estado_display }}</button></td>
+      {% endif %}
+      <td>{{ movimiento.fecha_hora|date:"d-m-Y H:i:s" }}</td>
+      <td>{{ movimiento.observacion }}</td>
+      </tr>
+      {% endfor %}
+    {% else %}
+      <tr>
+        <th scope="row" colspan="4" class="text-center">No se encontraron registros</th>
+      </tr>
+    {% endif %}
+  </tbody>
+  </table>
+</div>
+
+  {% if actual.estado == 'pendiente' or actual.estado == 'observado' %}
+  <hr/>
+  <form method="POST" action="{% url 'movimiento:cambio_estado' proyecto.id %}">
+    {% csrf_token %}
+  <div class="row text-center">
+    <div class="col-12 mb-3">
+      <input type="text" value="{{actual.etapa}}" name="mov-etapa" class="form-control" required="" id="id_mov-etapa">
+    </div>
+    <div class="col-3 mb-3">
+      <label for="{{ form.estado.id_for_label }}">Estado:</label>
+      <select name="mov-estado" class="form-control" required="" id="id_mov-estado">
+        <option value="aceptado">Aceptado</option>
+        <option value="rechazado">Rechazado</option>
+        <option value="observado">Observado</option>
+      </select>
+      {{form.estado.error}}
+    </div>
+    <div class="col-6 mb-3">
+      <label for="{{ form.observacion.id_for_label }}">Observación:</label>
+      {{form.observacion}}
+      {{form.observacion.error}}
+    </div>
+    <div class="col-3">
+      <button class="btn btn-outline-primary mb-3" type="submit">
+        Aplicar
+      </button>
+    </div>
+  </div>
+  </form>
+  {% endif %}
+
 </section>
 {% endblock %}
