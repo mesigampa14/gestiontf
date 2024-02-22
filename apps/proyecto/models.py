@@ -5,9 +5,25 @@ from apps.sistema.models import Docente, Estudiante
 
 # Create your models here.
 class Proyecto(models.Model):
+    ETAPA = (
+        ('evaluacion_comision', 'Evaluación por CSTF'),
+        ('evaluacion_tribunal', 'Evaluación por tribunal'),
+        ('borrador', 'Presentación del borrador'),
+        ('evaluacion_borrador', 'Evaluación del Borrador'),
+        ('defensa', 'Defensa del Trabajo Final'),
+    )
+
+    ESTADO = (
+        ('pendiente', 'Pendiente'),
+        ('rechazado', 'Rechazado'),
+        ('observado', 'Observado'),
+        ('aceptado', 'Aceptado'),
+    )
     titulo = models.CharField(max_length=300)
     descripcion = models.TextField()
     presentacion = models.DateField(null=True, blank=True)
+    etapa = models.CharField(max_length=250, choices=ETAPA, null=True, blank=True)
+    estado = models.CharField(max_length=250, choices=ESTADO, null=True, blank=True)
     archivos = models.FileField(upload_to='apps/proyecto/archivos/', null=True, blank=True)
 
     def __str__(self):
@@ -29,7 +45,7 @@ class ProyectoDocente(models.Model):
     docente = models.ForeignKey(Docente, on_delete=models.CASCADE, default=None)
     cargo = models.CharField(max_length=25, choices=CARGO)
     fecha_alta = models.DateTimeField(auto_now_add=True)
-    fecha_baja = models.DateTimeField(auto_now=True)
+    fecha_baja = models.DateTimeField(blank=True, null=True)
     activo = models.BooleanField(default=True)
 
     def __str__(self):
@@ -40,7 +56,7 @@ class ProyectoEstudiante(models.Model):
     proyecto = models.ForeignKey(Proyecto, on_delete=models.CASCADE, default=None)
     estudiante = models.ForeignKey(Estudiante, on_delete=models.CASCADE, default=None)
     fecha_alta = models.DateTimeField(auto_now_add=True)
-    fecha_baja = models.DateTimeField(auto_now=True)
+    fecha_baja = models.DateTimeField(blank=True, null=True)
     activo = models.BooleanField(default=True)
 
     def __str__(self):

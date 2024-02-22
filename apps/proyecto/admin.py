@@ -4,7 +4,7 @@ from apps.proyecto.models import Proyecto, ProyectoEstudiante, ProyectoDocente
 
 
 class EstudianteAdmin(admin.ModelAdmin):
-    readonly_fields = ('fecha_alta',)
+    readonly_fields = ('fecha_alta', 'fecha_baja')
 
 
 class DocenteAdmin(admin.ModelAdmin):

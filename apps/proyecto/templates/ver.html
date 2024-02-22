@@ -8,11 +8,13 @@
       $('#estudiante-busqueda').submit(function(event) {
         event.preventDefault();
         var query = $('#est_busqueda').val();
+        var proy = $('#proyecto').val();
         $.ajax({
           type: 'GET',
           url: '{% url "buscarEstudiante" %}',
           data: {
-            'q': query
+            'q': query,
+            'proyecto': proy,
           },
           success: function(data) {
             $('#estudiante_resultados').html(data);
@@ -26,11 +28,13 @@
       $('#docente-busqueda').submit(function(event) {
         event.preventDefault();
         var query = $('#doc_busqueda').val();
+        var proy = $('#proyectoD').val();
         $.ajax({
           type: 'GET',
           url: '{% url "buscarDocente" %}',
           data: {
-            'q': query
+            'q': query,
+            'proyectoDocente': proy,
           },
           success: function(data) {
             $('#docente_resultados').html(data);
@@ -49,6 +53,13 @@
         Volver
       </a>
   </div>
+
+  {% if messages %}
+    {% for message in messages %}
+      <div class="alert alert-{{ message.tags }}" role="alert">{{ message }}</div>
+    {% endfor %}
+  {% endif %}
+
   <div class="mb-3">
     Titulo: <strong>{{proyecto.titulo}}</strong>
   </div>
@@ -70,7 +81,8 @@
     Etapa Actual: <strong>{{ actual.get_etapa_display }}</strong>
   </div>
   <div class="mb-3">
-    Estado Actual: <strong>{{ actual.get_estado_display }}</strong>
+    Estado Actual:
+    <span class="badge text-bg-{{ actual.color }}">{{ actual.get_estado_display }}</span>
   </div>
   <hr/>
 
@@ -86,18 +98,25 @@
       Agregar
     </button>
   </div>
-  <!-- Modal -->
+  <!-- Modal Estudiantes -->
   <div class="modal fade" id="estudianteModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
+    <div class="modal-dialog modal-lg">
       <div class="modal-content">
         <div class="modal-header">
           <h1 class="modal-title fs-5" id="exampleModalLabel">Listado de estudiantes</h1>
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
         <div class="modal-body">
-          <form id="estudiante-busqueda">
-              <input type="text" id="est_busqueda" name="q" placeholder="Buscar por Matrícula">
-              <input type="submit" value="Buscar">
+          <form id="estudiante-busqueda" class="mb-3">
+            <div class="row">
+              <div class="col-8">
+                <input type="text" id="est_busqueda" name="q" placeholder="Buscar por Matrícula" class="form-control">
+                <input type="hidden" id="proyecto" name="proyecto" value="{{ proyecto.id }}" disabled>
+              </div>
+              <div class="col-4">
+                <input type="submit" value="Buscar" class="btn btn-outline-primary">
+              </div>
+            </div>
           </form>
 
           <div id="estudiante_resultados">
@@ -113,6 +132,7 @@
       <th scope="col">Apellido y Nombre</th>
       <th scope="col">DNI</th>
       <th scope="col">Matricula</th>
+      <th scope="col">Fecha de Alta</th>
       <th scope="col">Estado</th>
       <th scope="col">Acciones</th>
     </tr>
@@ -124,13 +144,34 @@
       <td>{{ estudiante.estudiante.user.apellido }}, {{ estudiante.estudiante.user.nombre }}</td>
       <td>{{ estudiante.estudiante.user.dni }}</td>
       <td>{{ estudiante.estudiante.matricula }}</td>
-      <td>{{ estudiante.activo }}</td>
       <td>{{ estudiante.fecha_alta|date:"d-m-Y H:i:s" }}</td>
+      {% if estudiante.activo %}
+        <td>
+          <span class="badge text-bg-success">Activo</span>
+        </td>
+        <td>
+          <form method="POST" action="{% url 'proyecto:delEstudiante' %}">
+            {% csrf_token %}
+            <input type="hidden" name="proyecto" value="{{estudiante.proyecto.id}}">
+            <input type="hidden" name="estudiante" value="{{estudiante.estudiante.id}}">
+
+            <button type="submit" class="btn btn-outline-danger btn-sm">
+              {% include "icon/cancel.html" %}
+              Quitar
+            </button>
+          </form>
+        </td>
+      {% else %}
+        <td colspan="2">
+          <span class="badge text-bg-danger">Baja: {{estudiante.fecha_baja|date:"d-m-Y H:i:s"}}</span>
+        </td>
+      {% endif %}
+
       </tr>
       {% endfor %}
     {% else %}
       <tr>
-        <th scope="row" colspan="4" class="text-center">No se encontraron registros</th>
+        <th scope="row" colspan="6" class="text-center">No se encontraron registros</th>
       </tr>
     {% endif %}
   </tbody>
@@ -149,17 +190,25 @@
       Agregar
     </button>
   </div>
+  <!-- Modal Docentes -->
   <div class="modal fade" id="docenteModal" tabindex="-1" aria-labelledby="docenteModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
+    <div class="modal-dialog modal-lg">
       <div class="modal-content">
         <div class="modal-header">
           <h1 class="modal-title fs-5" id="docenteModalLabel">Listado de docentes</h1>
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
         <div class="modal-body">
-          <form id="docente-busqueda">
-              <input type="text" id="doc_busqueda" name="q" placeholder="Buscar por CUIL">
-              <input type="submit" value="Buscar">
+          <form id="docente-busqueda" class="mb-3">
+            <div class="row">
+              <div class="col-8">
+                <input type="text" id="doc_busqueda" name="q" placeholder="Buscar Docente" class="form-control">
+                <input type="hidden" id="proyectoD" name="proyectoD" value="{{ proyecto.id }}">
+              </div>
+              <div class="col-4">
+                <input type="submit" value="Buscar" class="btn btn-outline-primary">
+              </div>
+            </div>
           </form>
 
           <div id="docente_resultados">
@@ -175,24 +224,45 @@
       <th scope="col">Apellido y Nombre</th>
       <th scope="col">CUIL</th>
       <th scope="col">Cargo</th>
+      <th scope="col">Fecha de Alta</th>
       <th scope="col">Estado</th>
       <th scope="col">Acciones</th>
     </tr>
   </thead>
   <tbody>
-    {% if proy_estu %}
+    {% if proy_docen %}
       {% for docente in proy_docen %}
       <tr>
       <td>{{ docente.docente.user.apellido }}, {{ docente.docente.user.nombre }}</td>
       <td>{{ docente.docente.cuil }}</td>
       <td>{{ docente.get_cargo_display }}</td>
-      <td>{{ docente.activo }}</td>
       <td>{{ docente.fecha_alta|date:"d-m-Y H:i:s" }}</td>
+      {% if docente.activo %}
+        <td>
+          <span class="badge text-bg-success">Activo</span>
+        </td>
+        <td>
+          <form method="POST" action="{% url 'proyecto:delDocente' %}">
+            {% csrf_token %}
+            <input type="hidden" name="proyecto" value="{{docente.proyecto.id}}">
+            <input type="hidden" name="docente" value="{{docente.docente.id}}">
+
+            <button type="submit" class="btn btn-outline-danger btn-sm">
+              {% include "icon/cancel.html" %}
+              Quitar
+            </button>
+          </form>
+        </td>
+      {% else %}
+        <td colspan="2">
+          <span class="badge text-bg-danger">Baja: {{docente.fecha_baja|date:"d-m-Y H:i:s"}}</span>
+        </td>
+      {% endif %}
       </tr>
       {% endfor %}
     {% else %}
       <tr>
-        <th scope="row" colspan="4" class="text-center">No se encontraron registros</th>
+        <th scope="row" colspan="6" class="text-center">No se encontraron registros</th>
       </tr>
     {% endif %}
   </tbody>
@@ -218,14 +288,15 @@
       {% for movimiento in movimientos %}
       <tr>
       <td>{{ movimiento.get_etapa_display }}</td>
+
       {% if movimiento.estado == 'rechazado' %}
-        <td><button class="btn btn-danger">{{ movimiento.get_estado_display }}</button></td>
+        <td><span class="badge text-bg-danger">{{ movimiento.get_estado_display }}</span></td>
       {% elif movimiento.estado == 'observado' %}
-        <td><button class="btn btn-warning">{{ movimiento.get_estado_display }}</button></td>
+        <td><span class="badge text-bg-warning">{{ movimiento.get_estado_display }}</span></td>
       {% elif movimiento.estado == 'aceptado' %}
-        <td><button class="btn btn-success">{{ movimiento.get_estado_display }}</button></td>
+        <td><span class="badge text-bg-success">{{ movimiento.get_estado_display }}</span></td>
       {% else %}
-        <td><button class="btn btn-primary">{{ movimiento.get_estado_display }}</button></td>
+        <td><span class="badge text-bg-primary">{{ movimiento.get_estado_display }}</span></td>
       {% endif %}
       <td>{{ movimiento.fecha_hora|date:"d-m-Y H:i:s" }}</td>
       <td>{{ movimiento.observacion }}</td>
@@ -239,36 +310,52 @@
   </tbody>
   </table>
 </div>
+  {% if tipo_usuario == 'comision' and actual.etapa == 'evaluacion_comision' %}
 
   {% if actual.estado == 'pendiente' or actual.estado == 'observado' %}
   <hr/>
-  <form method="POST" action="{% url 'movimiento:cambio_estado' proyecto.id %}">
+  <form method="POST" action="{% url 'movimiento:cambio_estado' proyecto.id %}" enctype="multipart/form-data">
     {% csrf_token %}
   <div class="row text-center">
     <div class="col-12 mb-3">
-      <input type="text" value="{{actual.etapa}}" name="mov-etapa" class="form-control" required="" id="id_mov-etapa">
+      <input type="hidden" value="{{actual.etapa}}" name="mov-etapa" class="form-control" required="" id="id_mov-etapa">
     </div>
-    <div class="col-3 mb-3">
-      <label for="{{ form.estado.id_for_label }}">Estado:</label>
-      <select name="mov-estado" class="form-control" required="" id="id_mov-estado">
-        <option value="aceptado">Aceptado</option>
-        <option value="rechazado">Rechazado</option>
-        <option value="observado">Observado</option>
-      </select>
-      {{form.estado.error}}
+    <div class="row">
+      <div class="col-3 mb-3">
+        <label for="{{ form.estado.id_for_label }}">Estado:</label>
+        <select name="mov-estado" class="form-control" required="" id="id_mov-estado">
+          <option value="aceptado">Aceptado</option>
+          <option value="rechazado">Rechazado</option>
+          <option value="observado">Observado</option>
+        </select>
+        {{form.estado.error}}
+      </div>
+      <div class="col-9 mb-3">
+        <label for="{{ form.observacion.id_for_label }}">Observación:</label>
+        {{form.observacion}}
+        {{form.observacion.error}}
+      </div>
     </div>
-    <div class="col-6 mb-3">
-      <label for="{{ form.observacion.id_for_label }}">Observación:</label>
-      {{form.observacion}}
-      {{form.observacion.error}}
-    </div>
-    <div class="col-3">
-      <button class="btn btn-outline-primary mb-3" type="submit">
-        Aplicar
-      </button>
+    <div class="row">
+      <div class="col-3 mb-3">
+        <label for="{{ form.informe_fecha.id_for_label }}">Fecha:</label>
+        {{form.informe_fecha}}
+        {{form.informe_fecha.error}}
+      </div>
+      <div class="col-6 mb-3">
+        <label for="{{ form.infomre_archivo.id_for_label }}">Archivo:</label>
+        {{form.informe_archivo}}
+        {{form.informe_archivo.error}}
+      </div>
+      <div class="col-3">
+        <button class="btn btn-outline-success mb-3" type="submit">
+          Guardar
+        </button>
+      </div>
     </div>
   </div>
   </form>
+  {% endif %}
   {% endif %}
 
 </section>

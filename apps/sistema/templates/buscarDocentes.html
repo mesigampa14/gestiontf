@@ -13,8 +13,9 @@
   <thead>
     <tr>
       <th scope="col">Apellido y Nombre</th>
+      <th scope="col">DNI</th>
       <th scope="col">CUIL</th>
-      <th scope="col">Matricula</th>
+      <th scope="col">Cargo</th>
       <th scope="col">Agregar</th>
     </tr>
   </thead>
@@ -24,16 +25,34 @@
       <tr>
       <td>{{ docente.user.apellido }}, {{ docente.user.nombre }}</td>
       <td>{{ docente.user.dni }}</td>
-      <td>{{ docente.matricula }}</td>
-        <td>
-      <button type="button" class="btn btn-outline-success heightBtn" data-bs-toggle="modal" data-bs-target="#exampleModal">
-        {% include "icon/plus.html" %}
-      </button></td>
+      <td>{{ docente.cuil }}</td>
+      <td colspan="2">
+      <form method="POST" action="{% url 'proyecto:addDocente' %}">
+          {% csrf_token %}
+        <div class="row" style="margin-right: 0">
+        <div class="col-8">
+          <input type="hidden" name="docente" id="docente" value="{{docente.id}}">
+          <input type="hidden" name="proyecto" id="proyecto" value="{{proyectoDocente.id}}">
+          <select id="cargo" name="cargo" class="form-control">
+            <option value="director">Director</option>
+            <option value="co_director">Co-Director</option>
+            <option value="asesor">Asesor</option>
+          </select>
+        </div>
+        <div class="col-2">
+          <button type="submit" class="btn btn-outline-success">
+            {% include "icon/plus.html" %}
+          </button>
+        </div>
+
+        </div>
+      </form>
+      </td>
       </tr>
       {% endfor %}
     {% else %}
       <tr>
-        <th scope="row" colspan="4" class="text-center">No se encontraron registros</th>
+        <th scope="row" colspan="5" class="text-center">No se encontraron registros</th>
       </tr>
     {% endif %}
   </tbody>
