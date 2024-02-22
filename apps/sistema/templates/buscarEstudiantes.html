@@ -25,26 +25,16 @@
       <td>{{ estudiante.user.apellido }}, {{ estudiante.user.nombre }}</td>
       <td>{{ estudiante.user.dni }}</td>
       <td>{{ estudiante.matricula }}</td>
-        <td>
-      <button type="button" class="btn btn-outline-success heightBtn" data-bs-toggle="modal" data-bs-target="#exampleModal">
-        {% include "icon/plus.html" %}
-      </button></td>
-      </tr>
-      {% endfor %}
-      {% for estudiante in estudiantes %}
-      <tr>
-      <td>{{ estudiante.user.apellido }}, {{ estudiante.user.nombre }}</td>
-      <td>{{ estudiante.user.dni }}</td>
-      <td>{{ estudiante.matricula }}</td>
-      <td>{{ estudiante.matricula }}</td>
-      </tr>
-      {% endfor %}
-      {% for estudiante in estudiantes %}
-      <tr>
-      <td>{{ estudiante.user.apellido }}, {{ estudiante.user.nombre }}</td>
-      <td>{{ estudiante.user.dni }}</td>
-      <td>{{ estudiante.matricula }}</td>
-      <td>{{ estudiante.matricula }}</td>
+      <td>
+        <form method="POST" action="{% url 'proyecto:addEstudiante' %}">
+          {% csrf_token %}
+          <input type="hidden" name="estudiante" id="estudiante" value="{{estudiante.id}}">
+          <input type="hidden" name="proyecto" id="proyecto" value="{{proyecto.id}}">
+          <button type="submit" class="btn btn-outline-success">
+            {% include "icon/plus.html" %}
+          </button>
+        </form>
+      </td>
       </tr>
       {% endfor %}
     {% else %}

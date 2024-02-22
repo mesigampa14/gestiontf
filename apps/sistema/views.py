@@ -1,11 +1,14 @@
 from django.contrib.auth.decorators import login_required
-from django.shortcuts import render, redirect
+from django.contrib.auth.decorators import permission_required
+from django.db.models import Q
+from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth.models import User
 from django.contrib.auth import login, logout, authenticate
 
+from apps.proyecto.models import Proyecto
 from apps.sistema.form import PerfilForm, EstudianteForm, DocenteForm
-from apps.sistema.models import Estudiante, Docente
+from apps.sistema.models import Estudiante, Docente, Perfil
 
 
 # Create your views here.
@@ -14,6 +17,7 @@ def home(request):
 
 
 @login_required
+@permission_required('auth.add_user')
 def signup(request):
     if request.method == 'POST':
         form_perfil = PerfilForm(request.POST, prefix='perfil')
@@ -79,28 +83,49 @@ def signin(request):
             return redirect('inicio')
 
 
+def usuario_lista(request):
+    usuarios = Perfil.objects.all()
+    return render(request, 'usuariosLista.html', {
+        'usuarios': usuarios,
+    })
+
+
 def cerrar_sesion(request):
     logout(request)
     return redirect('inicio')
 
 
 def buscarEstudiante(request):
+    proyecto = get_object_or_404(Proyecto, pk=request.GET['proyecto'])
     if 'q' in request.GET:
         query = request.GET ['q']
-        estudiantes = Estudiante.objects.filter(matricula__icontains=query)
+        estudiantes = Estudiante.objects.filter(
+            Q(matricula__icontains=query) |
+            Q(user__dni__icontains=query) |
+            Q(user__nombre__icontains=query) |
+            Q(user__apellido__icontains=query)
+        )
     else:
         estudiantes = Estudiante.objects.all()
     return render(request, 'buscarEstudiantes.html', {
         'estudiantes': estudiantes,
+        'proyecto': proyecto
     })
 
 
 def buscarDocente(request):
+    proyecto = get_object_or_404(Proyecto, pk=request.GET['proyectoDocente'])
     if 'q' in request.GET:
         query = request.GET ['q']
-        docentes = Docente.objects.filter(cuil__icontains=query)
+        docentes = Docente.objects.filter(
+            Q(cuil__icontains=query) |
+            Q(user__dni__icontains=query) |
+            Q(user__nombre__icontains=query) |
+            Q(user__apellido__icontains=query)
+        )
     else:
         docentes = Docente.objects.all()
     return render(request, 'buscarDocentes.html', {
         'docentes': docentes,
+        'proyectoDocente': proyecto,
     })

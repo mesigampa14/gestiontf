@@ -21,7 +21,8 @@ from apps.sistema import views
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', views.home, name='inicio'),
-    path('registrar/', views.signup, name='registrarme'),
+    path('usuarios/', views.usuario_lista, name='usuariosLista'),
+    path('registrar/', views.signup, name='registrar'),
     path('login/', views.signin, name='login'),
     path('logout/', views.cerrar_sesion, name='logout'),
     path('buscarEstudiante/', views.buscarEstudiante, name='buscarEstudiante'),

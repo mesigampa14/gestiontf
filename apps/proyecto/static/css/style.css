@@ -1,0 +1,80 @@
+.mt-64{
+  margin-top: 5rem !important;
+}
+.titleBtn{
+  display: flex;
+  justify-content: space-between;
+}
+.heightBtn{
+  height: 38px;
+}
+header img{
+  height: 2rem;
+}
+.ml-1{
+  margin-left: 1rem;
+}
+
+input[type="text"], input[type="number"], input[type="password"], input[type="date"], input[type="email"], textarea{
+  display: block;
+  width: 100%;
+  padding: .375rem .75rem;
+  font-size: 1rem;
+  font-weight: 400;
+  line-height: 1.5;
+  color: var(--bs-body-color);
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  background-color: var(--bs-body-bg);
+  background-clip: padding-box;
+  border: var(--bs-border-width) solid var(--bs-border-color);
+  border-radius: var(--bs-border-radius);
+  transition: border-color .15s ease-in-out,box-shadow .15s ease-in-out;
+}
+
+input[type="text"]:focus, input[type="number"]:focus, input[type="password"]:focus, textarea:focus, input[type="date"]:focus, input[type="email"]:focus{
+  color: var(--bs-body-color);
+  background-color: var(--bs-body-bg);
+  border-color: #86b7fe;
+  outline: 0;
+  box-shadow: 0 0 0 .25rem rgba(13,110,253,.25);}
+
+select{
+  display: block;
+  width: 100%;
+  padding: .375rem 2.25rem .375rem .75rem;
+  font-size: 1rem;
+  font-weight: 400;
+  line-height: 1.5;
+  color: var(--bs-body-color);
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  background-color: var(--bs-body-bg);
+  background-image: var(--bs-form-select-bg-img),var(--bs-form-select-bg-icon,none);
+  background-repeat: no-repeat;
+  background-position: right .75rem center;
+  background-size: 16px 12px;
+  border: var(--bs-border-width) solid var(--bs-border-color);
+  border-radius: var(--bs-border-radius);
+  transition: border-color .15s ease-in-out,box-shadow .15s ease-in-out;
+}
+
+@media screen and (max-width: 385px) {
+  .title_small {
+    display: block;
+  }
+  .title_large {
+    display: none;
+  }
+}
+
+@media screen and (min-width: 386px) {
+  .title_small {
+    display: none;
+  }
+  .title_large {
+    display: block;
+  }
+}
