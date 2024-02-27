@@ -1,0 +1,141 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+  <script>
+    $(document).ready(function() {
+      $('#estudiante-busqueda').submit(function(event) {
+        event.preventDefault();
+        var query = $('#est_busqueda').val();
+        var proy = $('#proyecto').val();
+        $.ajax({
+          type: 'GET',
+          url: '{% url "buscarEstudiante" %}',
+          data: {
+            'q': query,
+            'proyecto': proy,
+          },
+          success: function(data) {
+            $('#estudiante_resultados').html(data);
+          }
+        });
+      });
+    });
+
+
+    $(document).ready(function() {
+      $('#docente-busqueda').submit(function(event) {
+        event.preventDefault();
+        var query = $('#doc_busqueda').val();
+        var proy = $('#proyectoD').val();
+        $.ajax({
+          type: 'GET',
+          url: '{% url "buscarDocente" %}',
+          data: {
+            'q': query,
+            'proyectoDocente': proy,
+          },
+          success: function(data) {
+            $('#docente_resultados').html(data);
+          }
+        });
+      });
+    });
+  </script>
+
+
+<section class="card card-body">
+  <div class="d-flex justify-content-between">
+    <h1>Detalle del Tribunal</h1>
+      <a class="btn btn-outline-danger" href="{% url 'tribunal:lista' %}" style="height: 38px;">
+        {% include "icon/back.html" %}
+        Volver
+      </a>
+  </div>
+
+  {% if messages %}
+    {% for message in messages %}
+      <div class="alert alert-{{ message.tags }}" role="alert">{{ message }}</div>
+    {% endfor %}
+  {% endif %}
+
+  <div class="mb-3">
+    Número de la Disposición: <strong>{{ tribunal.disposicion_numero }}</strong>
+  </div>
+  <div class="mb-3">
+    Fecha de la Disposición: <strong>{{tribunal.disposicion_fecha|date:"d-m-Y"}}</strong>
+  </div>
+  <div class="mb-3">
+    Archivos:
+    {% if tribunal.disposicion_archivo %}
+      <a href="{% url 'tribunal:archivo_tribunal' tribunal.id %}">Descargar</a>
+    {% else %}
+      <strong>No hay archivo adjunto.</strong>
+    {% endif %}
+  </div>
+  <hr/>
+  <div class="mb-3">
+    Presidente: <strong>{{tribunal.presidente}}</strong>
+  </div>
+  <div class="mb-3">
+    Vocal Titular: <strong>{{tribunal.vocalTitular1}}</strong>
+  </div>
+  <div class="mb-3">
+    Vocal Titular: <strong>{{tribunal.vocalTitular2}}</strong>
+  </div>
+  <div class="mb-3">
+    Vocal Suplente: <strong>{{tribunal.vocalSuplente1}}</strong>
+  </div>
+  <div class="mb-3">
+    Vocal Suplente: <strong>{{tribunal.vocalSuplente2}}</strong>
+  </div>
+
+  <hr/>
+  Proyectos asociados al tribunal actual:
+  <table class="table table-striped table-hover">
+  <thead>
+    <tr>
+      <th scope="col">Etapa</th>
+      <th scope="col">Estado</th>
+      <th scope="col">Fecha y Hora</th>
+      <th scope="col">Archivo</th>
+      <th scope="col">Observación</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% if proyectos %}
+      {% for proyecto in proyectos %}
+
+      <tr>
+        <th scope="row">{{proyecto.id}}</th>
+        <td>{{proyecto.titulo}}</td>
+        <td>{{proyecto.presentacion|date:"d-m-Y"}}</td>
+        <td>{{proyecto.get_etapa_display}}
+           {% if proyecto.estado == 'rechazado' %}
+        <span class="badge text-bg-danger">{{ proyecto.get_estado_display }}</span>
+          {% elif proyecto.estado == 'observado' %}
+        <span class="badge text-bg-warning">{{ proyecto.get_estado_display }}</span>
+          {% elif proyecto.estado == 'aceptado' %}
+        <span class="badge text-bg-success">{{ proyecto.get_estado_display }}</span>
+          {% else %}
+        <span class="badge text-bg-primary">{{ proyecto.get_estado_display }}</span>
+          {% endif %}
+        </td>
+        <td>
+          <a class="btn btn-outline-primary btn-sm" href="{% url 'proyecto:ver' proyecto.id %}" style="height: 38px">
+            Abrir
+          </a>
+        </td>
+      </tr>
+      {% endfor %}
+    {% else %}
+      <tr>
+        <th scope="row" colspan="5" class="text-center">No se encontraron registros</th>
+      </tr>
+    {% endif %}
+  </tbody>
+  </table>
+
+</section>
+{% endblock %}
