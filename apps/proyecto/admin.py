@@ -8,7 +8,7 @@ class EstudianteAdmin(admin.ModelAdmin):
 
 
 class DocenteAdmin(admin.ModelAdmin):
-    readonly_fields = ('fecha_alta',)
+    readonly_fields = ('fecha_alta', 'fecha_baja')
 
 
 # Register your models here.

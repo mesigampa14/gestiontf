@@ -32,10 +32,21 @@
           <a class="nav-link" href="{% url 'proyecto:lista' %}">Proyectos</a>
         </li>
         <li class="nav-item">
+          <a class="nav-link" href="{% url 'tribunal:lista' %}">Tribunal</a>
+        </li>
+        <li class="nav-item">
           <a class="nav-link" href="{% url 'usuariosLista' %}">Usuarios</a>
         </li>
         <li class="nav-item">
-          <a class="nav-link" href="{% url 'logout' %}">Cerrar Sesión ({{ user.username }})</a>
+
+          <a class="nav-link" href="{% url 'logout' %}">Cerrar Sesión (
+            {% if user.perfil %}
+              {{ request.user.perfil.apellido }}, {{ request.user.perfil.nombre }}
+            {% else %}
+              {{ request.user }}
+            {% endif %}
+            )
+          </a>
         </li>
         {% else %}
         <li class="nav-item">

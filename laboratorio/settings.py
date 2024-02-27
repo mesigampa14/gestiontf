@@ -41,6 +41,7 @@ INSTALLED_APPS = [
     'apps.sistema',
     'apps.proyecto',
     'apps.movimiento',
+    'apps.tribunal',
 ]
 
 MIDDLEWARE = [

@@ -1,75 +1,88 @@
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.decorators import permission_required
+from django.db.models.functions import ExtractYear
+from django.http import HttpResponse
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from django.urls import reverse
-from django.db.models import OuterRef, Subquery, Max
+from django.db.models import Q, Count, F
 from django.utils import timezone
-from django.contrib.auth.models import User
+from datetime import datetime
 
 from apps.movimiento.form import MovimientoForm, MovPresForm
 from apps.movimiento.models import Movimiento
 from apps.proyecto.form import ProyectoForm, ProyectoEstudianteForm, ProyectoDocenteForm
 from apps.proyecto.models import Proyecto, ProyectoEstudiante, ProyectoDocente
-from apps.sistema.models import Estudiante, Docente, Perfil
+from apps.sistema.models import Estudiante, Docente
+from apps.tribunal.models import Tribunal
 
 
 # Create your views here.
 
 @login_required
 def proyecto_lista(request):
-    proyectos = Proyecto.objects.all().order_by('-id')
+    usuario = request.user
+    tipo_usuario = ''
+
+    if hasattr(usuario, 'perfil'):
+        perfil = usuario.perfil
+        tipo_usuario = perfil.tipo_usuario
+        if tipo_usuario == 'docente':
+            proyectos = Proyecto.objects.filter(proyectodocente__docente__user__dni=perfil.dni).order_by('-id')
+        if tipo_usuario == 'estudiante':
+            proyectos = Proyecto.objects.filter(proyectoestudiante__estudiante__user__dni=perfil.dni).order_by('-id')
+        if tipo_usuario == 'comision':
+            proyectos = Proyecto.objects.all().order_by('-id')
+    else:
+        #tipo_usuario = 'superadmin'
+        proyectos = Proyecto.objects.all().order_by('-id')
+
     return render(request, 'proyectosLista.html', {
         'proyectos': proyectos,
     })
 
-#@login_required
-#def proyecto_lista(request):
-    #movimientos = Movimiento.objects.values('proyecto').annotate(ultima_fecha=Max('fecha_hora')).distinct()
-    #movimientos_completos = Movimiento.objects.filter(
-        #proyecto__in=[movimiento['proyecto'] for movimiento in movimientos],
-        #fecha_hora__in=[movimiento['ultima_fecha'] for movimiento in movimientos]
-    #).order_by('-fecha_hora')
-    #return render(request, 'proyectosLista.html', {
-        #'proyectos': movimientos_completos,
-    #})
-
 @login_required
-def proyecto_lista_bad(request):
-    ultimos_movimientos = Movimiento.objects.filter(
-        proyecto=OuterRef('pk')
-    ).order_by('-fecha_hora').values('fecha_hora')[:1]
+def proyecto_reportes(request):
+    año_actual = datetime.now().year
 
-    proyectos_con_ultimo_movimiento = Proyecto.objects.annotate(
-        ultimo_movimiento_fecha=Subquery(ultimos_movimientos)
+    # Consulta para contar proyectos iniciados por año
+    proyectos_iniciados_por_año = Proyecto.objects.annotate(
+        año_inicio=ExtractYear('presentacion')
+    ).filter(
+        año_inicio__lte=año_actual
+    ).values('año_inicio').annotate(
+        total_iniciados=Count('id')
     )
 
-    # Iterar sobre los proyectos y mostrar el último movimiento de cada uno
-    for proyecto in proyectos_con_ultimo_movimiento:
-        ultimo_movimiento = Movimiento.objects.filter(
-            proyecto=proyecto,
-            fecha_hora=proyecto.ultimo_movimiento_fecha
-        ).first()
-        print(f"Proyecto: {proyecto.titulo}, Último movimiento: {ultimo_movimiento}")
+    # Consulta para contar proyectos terminados por año
+    proyectos_terminados_por_año = Proyecto.objects.annotate(
+        año_inicio=ExtractYear('presentacion'),
+        año_fin=ExtractYear('defensa_fecha')
+    ).filter(
+        Q(año_fin__lte=año_actual) | Q(defensa_fecha=None)
+    ).values('año_fin').annotate(
+        total_terminados=Count('id')
+    )
 
-    return render(request, 'proyectosLista.html', {
-                      'proyectos': proyectos_con_ultimo_movimiento,
-                      })
-    #proyectos = Proyecto.objects.annotate(ultima_fecha_hora=Max('movimiento__fecha_hora')).filter(movimiento__fecha_hora=F('ultima_fecha_hora'))
-    #print(proyectos)
-    #for proyecto in proyectos:
-        #ultimo_movimiento = Movimiento.objects.filter(
-            #proyecto=proyecto,
-            #fecha_hora=proyecto.ultima_fecha_hora
-        #).first()
-        #print(f"Proyecto: {proyecto.titulo}, Último movimiento: {ultimo_movimiento.fecha_hora}")
-    #return render(request, 'proyectosLista.html', {
-        #'proyectos': proyectos,
-    #})
+    # Consulta para contar proyectos iniciados y terminados en el mismo año
+    proyectos_iniciados_y_terminados_mismo_año = Proyecto.objects.annotate(
+        año_inicio=ExtractYear('presentacion'),
+        año_fin=ExtractYear('defensa_fecha')
+    ).filter(
+        año_inicio=F('año_fin'),
+        defensa_fecha__isnull=False
+    ).values('año_inicio').annotate(
+        total_iniciados_y_terminados=Count('id')
+    )
 
+    return render(request, 'proyectosReportes.html', {
+        'reportes_iniciados': proyectos_iniciados_por_año,
+        'reportes_finalizados': proyectos_terminados_por_año,
+        'reportes_anual': proyectos_iniciados_y_terminados_mismo_año,
+    })
 
 @login_required
-@permission_required('prooyecto.add_proyecto')
+@permission_required('proyecto.add_proyecto')
 def proyecto_nuevo(request):
     if request.method == 'POST':
         form_proyecto = ProyectoForm(request.POST, request.FILES, prefix='')
@@ -112,8 +125,41 @@ def proyecto_nuevo(request):
         })
 
 
+@login_required
 def proyecto_ver(request, proy_id):
+    vista = ''
+    perteneceTribunal = False # para saber si es un docente y pertenece al tribunal | etapa: evaluacion_tribunal
+    perteneceProyecto = False # para saber si es un docente y pertenece al proyecto | etapa: borrador
     proyecto = get_object_or_404(Proyecto, pk=proy_id)
+    usuario = request.user
+    tipo_usuario = ''
+
+    if hasattr(usuario, 'perfil'):
+        perfil = usuario.perfil
+        tipo_usuario = perfil.tipo_usuario
+        if tipo_usuario == 'docente':
+            tribunal_sel = Tribunal.objects.filter(
+                Q(pk=proyecto.tribunal.id) &
+                (Q(presidente__user__dni=perfil.dni)|
+                Q(vocalTitular1__user__dni=perfil.dni)|
+                Q(vocalTitular2__user__dni=perfil.dni)|
+                Q(vocalSuplente1__user__dni=perfil.dni)|
+                Q(vocalSuplente2__user__dni=perfil.dni))
+            )
+
+            if tribunal_sel:
+                perteneceTribunal = True
+
+
+            docente_sel = ProyectoDocente.objects.filter(
+                docente__user__dni=perfil.dni, cargo='director'
+            )
+            if docente_sel:
+                perteneceProyecto = True
+
+    else:
+        tipo_usuario = 'superadmin'
+
     movimientos = Movimiento.objects.filter(proyecto_id=proy_id).order_by('-id')
     band = True
     actual = {}
@@ -135,34 +181,40 @@ def proyecto_ver(request, proy_id):
                 'estado': mov.estado,
                 'color': color
             }
+            if (tipo_usuario=='superadmin' or tipo_usuario=='comision') and mov.etapa=='evaluacion_comision' and (mov.estado=='pendiente' or mov.estado=='observado'):
+                vista = 'comision'
+
+            if (tipo_usuario=='superadmin' or tipo_usuario=='docente') and perteneceTribunal and mov.etapa=='evaluacion_tribunal' and (mov.estado=='pendiente' or mov.estado=='observado'):
+                vista = 'tribunal'
+
+            if (tipo_usuario=='superadmin' or tipo_usuario=='docente') and perteneceProyecto and mov.etapa=='borrador' and (mov.estado=='pendiente' or mov.estado=='observado'):
+                vista = 'borrador'
+
+            if (tipo_usuario=='superadmin' or tipo_usuario=='docente') and perteneceTribunal and mov.etapa=='evaluacion_borrador' and (mov.estado=='pendiente' or mov.estado=='observado'):
+                vista = 'tribunal'
+
+            if (tipo_usuario=='superadmin' or tipo_usuario=='comision') and mov.etapa=='defensa' and (mov.estado=='pendiente' or mov.estado=='observado'):
+                vista = 'defensa'
+
             band = False
 
     proy_estu = ProyectoEstudiante.objects.filter(proyecto_id=proy_id)
-    estudiantes = Estudiante.objects.all()
     proy_docen = ProyectoDocente.objects.filter(proyecto_id=proy_id)
     form_movimiento = MovPresForm(prefix='mov')
-
-    usuario = request.user
-    tipo_usuario = ''
-
-    if hasattr(usuario, 'perfil'):
-        perfil = usuario.perfil
-        tipo_usuario = perfil.tipo_usuario
-    else:
-        tipo_usuario = 'superadmin'
 
     return render(request, 'ver.html', {
         'proyecto': proyecto,
         'movimientos': movimientos,
         'proy_estu': proy_estu,
-        'estudiantes': estudiantes,
         'proy_docen': proy_docen,
         'form': form_movimiento,
         'actual': actual,
-        'tipo_usuario': tipo_usuario
+        'tipo_usuario': tipo_usuario,
+        'vista': vista,
     })
 
 
+@login_required
 def proyecto_addEstudiante(request):
     if request.method == 'POST':
         relacion = ProyectoEstudiante.objects.filter(proyecto=request.POST['proyecto'], estudiante=request.POST['estudiante'], activo=True)
@@ -188,6 +240,7 @@ def proyecto_addEstudiante(request):
         return redirect(reverse('proyecto:lista'))
 
 
+@login_required
 def proyecto_delEstudiante(request):
     if request.method == 'POST':
         relacion = get_object_or_404(ProyectoEstudiante, proyecto=request.POST['proyecto'], estudiante=request.POST['estudiante'], activo=True)
@@ -208,6 +261,7 @@ def proyecto_delEstudiante(request):
         return redirect(reverse('proyecto:lista'))
 
 
+@login_required
 def proyecto_addDocente(request):
     if request.method == 'POST':
         relacion = ProyectoDocente.objects.filter(proyecto=request.POST['proyecto'], docente=request.POST['docente'], activo=True)
@@ -234,9 +288,9 @@ def proyecto_addDocente(request):
         return redirect(reverse('proyecto:lista'))
 
 
+@login_required
 def proyecto_delDocente(request):
     if request.method == 'POST':
-        print(request.POST)
         relacion = get_object_or_404(ProyectoDocente, proyecto=request.POST['proyecto'], docente=request.POST['docente'], activo=True)
 
         if relacion:
@@ -255,3 +309,32 @@ def proyecto_delDocente(request):
         return redirect(reverse('proyecto:lista'))
 
 
+@login_required
+def proyecto_addTribunal(request):
+    if request.method == 'POST':
+        proyecto = get_object_or_404(Proyecto, pk=request.POST['proyecto'])
+        tribunal = get_object_or_404(Tribunal, pk=request.POST['tribunal'])
+
+        proyecto.tribunal = tribunal
+        proyecto.save()
+
+        messages.success(request, 'Se ha vinculado el tribunal al proyecto correctamente.')
+        return redirect(reverse('proyecto:ver', kwargs={'proy_id': proyecto.pk}))
+
+    else:
+        messages.error(request, 'Se ha producido un error.')
+        return redirect(reverse('proyecto:lista'))
+
+@login_required
+def archivo_proy(request, proy_id):
+    proyecto = Proyecto.objects.get(pk=proy_id)
+    response = HttpResponse (proyecto.archivos, content_type='application/force-download')
+    response['Content-Disposition'] = f'attachment; filename="{proyecto.archivos.name}"'
+    return response
+
+@login_required
+def borrador_proy(request, proy_id):
+    proyecto = Proyecto.objects.get(pk=proy_id)
+    response = HttpResponse (proyecto.borrador, content_type='application/force-download')
+    response['Content-Disposition'] = f'attachment; filename="{proyecto.borrador.name}"'
+    return response

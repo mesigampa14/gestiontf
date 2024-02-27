@@ -28,5 +28,6 @@ urlpatterns = [
     path('buscarEstudiante/', views.buscarEstudiante, name='buscarEstudiante'),
     path('buscarDocente/', views.buscarDocente, name='buscarDocente'),
     path('proyecto/', include('apps.proyecto.urls', namespace='proyecto')),
+    path('tribunal/', include('apps.tribunal.urls', namespace='tribunal')),
     path('movimiento/', include('apps.movimiento.urls', namespace='movimiento')),
 ]

@@ -42,6 +42,25 @@
         });
       });
     });
+
+    $(document).ready(function() {
+      $('#tribunal-busqueda').submit(function(event) {
+        event.preventDefault();
+        var query = $('#trib_busqueda').val();
+        var proy = $('#proyecto').val();
+        $.ajax({
+          type: 'GET',
+          url: '{% url "tribunal:buscar" %}',
+          data: {
+            'q': query,
+            'proyecto': proy,
+          },
+          success: function(data) {
+            $('#tribunal_resultados').html(data);
+          }
+        });
+      });
+    });
   </script>
 
 
@@ -72,11 +91,23 @@
   <div class="mb-3">
     Archivos:
     {% if proyecto.archivos %}
-      <a href="{{proyecto.archivos.url}}" target="_blank">Ver Archivo</a>
+      <a href="{% url 'proyecto:archivo_proy' proyecto.id %}">Ver Archivo</a>
     {% else %}
       <strong>No hay archivo adjunto.</strong>
     {% endif %}
   </div>
+  {% if proyecto.borrador %}
+  <div class="mb-3">
+    Borrador:
+    <a href="{% url 'proyecto:borrador_proy' proyecto.id %}">Ver Archivo</a>
+  </div>
+  {% endif %}
+  {% if proyecto.defensa_fecha %}
+  <div class="mb-3">
+    Defensa:
+    <strong>{{proyecto.defensa_fecha|date:"d-m-Y"}}</strong> / Nota: <strong>{{proyecto.defensa_nota}}</strong>
+  </div>
+  {% endif %}
   <div class="mb-3">
     Etapa Actual: <strong>{{ actual.get_etapa_display }}</strong>
   </div>
@@ -270,6 +301,75 @@
   </div>
 </div>
 
+  <button class="btn btn-outline-primary mb-3" type="button" data-bs-toggle="collapse" data-bs-target="#collapseTribunal" aria-expanded="false" aria-controls="collapseExample">
+    Información del tribunal
+  </button>
+  <div class="collapse" id="collapseTribunal">
+  <div class="d-flex justify-content-between">
+    <span>Tribunal designado al proyecto:</span>
+
+    {% if vista == 'comision' and not proyecto.tribunal %}
+    <button type="button" class="btn btn-outline-success heightBtn" data-bs-toggle="modal" data-bs-target="#tribunalModal">
+      {% include "icon/plus.html" %}
+      Asignar
+    </button>
+    {% endif %}
+  </div>
+  <!-- Modal Tribunal -->
+  <div class="modal fade" id="tribunalModal" tabindex="-1" aria-labelledby="tribunalModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h1 class="modal-title fs-5" id="tribunalModalLabel">Listado de Tribunales</h1>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <form id="tribunal-busqueda" class="mb-3">
+            <div class="row">
+              <div class="col-8">
+                <input type="text" id="trib_busqueda" name="q" placeholder="Buscar Tribunal" class="form-control">
+                <input type="hidden" id="proyectoT" name="proyectoT" value="{{ proyecto.id }}">
+              </div>
+              <div class="col-4">
+                <input type="submit" value="Buscar" class="btn btn-outline-primary">
+              </div>
+            </div>
+          </form>
+
+          <div id="tribunal_resultados">
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="mb-3">
+  <table class="table table-striped table-hover">
+  <thead>
+    <tr>
+      <th scope="col">#</th>
+      <th scope="col">Disposición Número</th>
+      <th scope="col">Fecha</th>
+      <th scope="col">Presidente</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% if proyecto.tribunal %}
+      <tr>
+        <td>{{ proyecto.tribunal.id }}</td>
+        <td>{{ proyecto.tribunal.disposicion_numero }}</td>
+        <td>{{ proyecto.tribunal.disposicion_fecha|date:"d-m-Y" }}</td>
+        <td>{{ proyecto.tribunal.presidente }}</td>
+      </tr>
+    {% else %}
+      <tr>
+        <th scope="row" colspan="4" class="text-center">No se encontraron registros</th>
+      </tr>
+    {% endif %}
+  </tbody>
+  </table>
+  </div>
+</div>
+
   <button class="btn btn-outline-primary mb-3" type="button" data-bs-toggle="collapse" data-bs-target="#collapseMovimientos" aria-expanded="false" aria-controls="collapseExample">
     Información de los movimientos
   </button>
@@ -280,6 +380,7 @@
       <th scope="col">Etapa</th>
       <th scope="col">Estado</th>
       <th scope="col">Fecha y Hora</th>
+      <th scope="col">Archivo</th>
       <th scope="col">Observación</th>
     </tr>
   </thead>
@@ -299,6 +400,13 @@
         <td><span class="badge text-bg-primary">{{ movimiento.get_estado_display }}</span></td>
       {% endif %}
       <td>{{ movimiento.fecha_hora|date:"d-m-Y H:i:s" }}</td>
+      <td>
+        {% if movimiento.informe_archivo %}
+        <a href="{% url 'movimiento:archivo_mov' movimiento.id %}" target="_blank">
+          {% include "icon/search.html" %}
+        </a>
+        {% endif %}
+      </td>
       <td>{{ movimiento.observacion }}</td>
       </tr>
       {% endfor %}
@@ -310,9 +418,7 @@
   </tbody>
   </table>
 </div>
-  {% if tipo_usuario == 'comision' and actual.etapa == 'evaluacion_comision' %}
-
-  {% if actual.estado == 'pendiente' or actual.estado == 'observado' %}
+  {% if vista == 'comision' %}
   <hr/>
   <form method="POST" action="{% url 'movimiento:cambio_estado' proyecto.id %}" enctype="multipart/form-data">
     {% csrf_token %}
@@ -343,7 +449,7 @@
         {{form.informe_fecha.error}}
       </div>
       <div class="col-6 mb-3">
-        <label for="{{ form.infomre_archivo.id_for_label }}">Archivo:</label>
+        <label for="{{ form.infomre_archivo.id_for_label }}">Informe (.pdf)</label>
         {{form.informe_archivo}}
         {{form.informe_archivo.error}}
       </div>
@@ -356,6 +462,143 @@
   </div>
   </form>
   {% endif %}
+
+  {% if vista == 'tribunal' %}
+  <hr/>
+  <form method="POST" action="{% url 'movimiento:cambio_estado' proyecto.id %}" enctype="multipart/form-data">
+    {% csrf_token %}
+  <div class="row text-center">
+    <div class="col-12 mb-3">
+      <input type="hidden" value="{{actual.etapa}}" name="mov-etapa" class="form-control" required="" id="id_mov-etapa">
+    </div>
+    <div class="row">
+      <div class="col-3 mb-3">
+        <label for="{{ form.estado.id_for_label }}">Estado:</label>
+        <select name="mov-estado" class="form-control" required="" id="id_mov-estado">
+          <option value="aceptado">Aceptado</option>
+          <option value="rechazado">Rechazado</option>
+          <option value="observado">Observado</option>
+        </select>
+        {{form.estado.error}}
+      </div>
+      <div class="col-9 mb-3">
+        <label for="{{ form.observacion.id_for_label }}">Observación:</label>
+        {{form.observacion}}
+        {{form.observacion.error}}
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-3 mb-3">
+        <label for="{{ form.informe_fecha.id_for_label }}">Fecha:</label>
+        {{form.informe_fecha}}
+        {{form.informe_fecha.error}}
+      </div>
+      <div class="col-6 mb-3">
+        <label for="{{ form.infomre_archivo.id_for_label }}">Informe (.pdf)</label>
+        {{form.informe_archivo}}
+        {{form.informe_archivo.error}}
+      </div>
+      <div class="col-3">
+        <button class="btn btn-outline-success mb-3" type="submit">
+          Guardar
+        </button>
+      </div>
+    </div>
+  </div>
+  </form>
+  {% endif %}
+
+  {% if vista == 'borrador' %}
+  <hr/>
+  <form method="POST" action="{% url 'movimiento:cambio_estado' proyecto.id %}" enctype="multipart/form-data">
+    {% csrf_token %}
+  <div class="row text-center">
+    <div class="col-12 mb-3">
+      <input type="hidden" value="{{actual.etapa}}" name="mov-etapa" class="form-control" required="" id="id_mov-etapa">
+    </div>
+    <div class="row">
+      <div class="col-3 mb-3">
+        <label for="{{ form.estado.id_for_label }}">Estado:</label>
+        <select name="mov-estado" class="form-control" required="" id="id_mov-estado">
+          <option value="aceptado">Aceptado</option>
+          <option value="rechazado">Rechazado</option>
+          <option value="observado">Observado</option>
+        </select>
+        {{form.estado.error}}
+      </div>
+      <div class="col-9 mb-3">
+        <label for="{{ form.observacion.id_for_label }}">Observación:</label>
+        {{form.observacion}}
+        {{form.observacion.error}}
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-6 mb-3">
+        <label for="{{ form.infomre_archivo.id_for_label }}">Informe (.pdf)</label>
+        {{form.informe_archivo}}
+        {{form.informe_archivo.error}}
+      </div>
+      <div class="col-6 mb-3">
+        <label for="{{ form.borrador.id_for_label }}">Borrador (.pdf)</label>
+        <input type="file" name="mov-borrador" class="form-control" id="id_mov-borrador">
+      </div>
+      <div class="col-3 mb-3">
+        <label for="{{ form.informe_fecha.id_for_label }}">Fecha:</label>
+        {{form.informe_fecha}}
+        {{form.informe_fecha.error}}
+      </div>
+      <div class="col-3">
+        <button class="btn btn-outline-success mb-3" type="submit">
+          Guardar
+        </button>
+      </div>
+    </div>
+  </div>
+  </form>
+  {% endif %}
+
+  {% if vista == 'defensa' %}
+  <hr/>
+  <form method="POST" action="{% url 'movimiento:cambio_estado' proyecto.id %}" enctype="multipart/form-data">
+    {% csrf_token %}
+  <div class="row text-center">
+    <div class="col-12 mb-3">
+      <input type="hidden" value="{{actual.etapa}}" name="mov-etapa" class="form-control" required="" id="id_mov-etapa">
+    </div>
+    <div class="row">
+      <div class="col-3 mb-3">
+        <label for="{{ form.estado.id_for_label }}">Estado:</label>
+        <select name="mov-estado" class="form-control" required="" id="id_mov-estado">
+          <option value="aceptado">Aceptado</option>
+          <option value="rechazado">Rechazado</option>
+          <option value="observado">Observado</option>
+        </select>
+        {{form.estado.error}}
+      </div>
+      <div class="col-9 mb-3">
+        <label for="{{ form.observacion.id_for_label }}">Observación:</label>
+        {{form.observacion}}
+        {{form.observacion.error}}
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-3 mb-3">
+        <label for="{{ form.informe_fecha.id_for_label }}">Fecha:</label>
+        {{form.informe_fecha}}
+        {{form.informe_fecha.error}}
+      </div>
+      <div class="col-6 mb-3">
+        <label for="{{ form.infomre_archivo.id_for_label }}">Nota:</label>
+        <input type="number" name="nota" id="nota" class="form-control" placeholder="Ingresar nota" max="10" min="1" >
+      </div>
+      <div class="col-3">
+        <button class="btn btn-outline-success mb-3" type="submit">
+          Guardar
+        </button>
+      </div>
+    </div>
+  </div>
+  </form>
   {% endif %}
 
 </section>

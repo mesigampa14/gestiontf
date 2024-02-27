@@ -5,6 +5,10 @@
 
   <div class="d-flex justify-content-between">
     <h1>Listado de Proyectos</h1>
+    <a class="btn btn-outline-primary heightBtn" href="{% url 'proyecto:reportes' %}" style="height: 38px">
+      {% include "icon/search.html" %}
+      Reportes
+    </a>
     <a class="btn btn-outline-success heightBtn" href="{% url 'proyecto:nuevo' %}" style="height: 38px">
       {% include "icon/plus.html" %}
       Crear nuevo

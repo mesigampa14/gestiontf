@@ -1,6 +1,8 @@
+from django.core.validators import FileExtensionValidator
 from django.db import models
 
 from apps.sistema.models import Docente, Estudiante
+from apps.tribunal.models import Tribunal
 
 
 # Create your models here.
@@ -25,6 +27,10 @@ class Proyecto(models.Model):
     etapa = models.CharField(max_length=250, choices=ETAPA, null=True, blank=True)
     estado = models.CharField(max_length=250, choices=ESTADO, null=True, blank=True)
     archivos = models.FileField(upload_to='apps/proyecto/archivos/', null=True, blank=True)
+    tribunal = models.ForeignKey(Tribunal, on_delete=models.CASCADE, blank=True, null=True)
+    borrador = models.FileField(upload_to='apps/proyecto/borrador/', null=True, blank=True, validators=[FileExtensionValidator(['pdf'])])
+    defensa_fecha = models.DateField(null=True, blank=True)
+    defensa_nota = models.IntegerField(null=True,blank=False)
 
     def __str__(self):
         return f'{self.titulo}'

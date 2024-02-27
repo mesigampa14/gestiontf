@@ -1,0 +1,68 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<section class="card card-body">
+  <div class="d-flex justify-content-between">
+    <h1>Nuevo Tribunal</h1>
+      <a class="btn btn-outline-danger heightBtn" href="{% url 'tribunal:lista' %}" style="height: 38px">
+        {% include "icon/back.html" %}
+        Volver
+      </a>
+  </div>
+
+  {% if messages %}
+    {% for message in messages %}
+      <div class="alert alert-{{ message.tags }}" role="alert">{{ message }}</div>
+    {% endfor %}
+  {% endif %}
+  <form method="POST" enctype="multipart/form-data" id="miFormulario">
+    {{error}}
+    {% csrf_token %}
+    <div class="mb-3">
+      <label for="{{ form.disposicion_numero.id_for_label }}">Disposición Número:</label>
+      {{form.disposicion_numero}}
+      {{form.disposicion_numero.error}}
+    </div>
+    <div class="mb-3">
+      <label for="{{ form.disposicion_fecha.id_for_label }}">Disposición Fecha:</label>
+      {{form.disposicion_fecha}}
+      {{form.disposicion_fecha.error}}
+    </div>
+    <div class="mb-3">
+      <label for="{{ form.disposicion_archivo.id_for_label }}">Archivos:</label>
+      {{form.disposicion_archivo}}
+      {{form.disposicion_archivo.error}}
+    </div>
+    <div class="mb-3">
+      <label for="{{ form.titulo.id_for_label }}">Presidente:</label>
+      {{form.presidente}}
+      {{form.presidente.error}}
+    </div>
+    <div class="mb-3">
+      <label for="{{ form.vocalTitular1.id_for_label }}">Vocal Titular:</label>
+      {{form.vocalTitular1}}
+      {{form.vocalTitular1.error}}
+    </div>
+    <div class="mb-3">
+      <label for="{{ form.vocalTitular2.id_for_label }}">Vocal Titular:</label>
+      {{form.vocalTitular2}}
+      {{form.vocalTitular2.error}}
+    </div>
+    <div class="mb-3">
+      <label for="{{ form.vocalSuplente1.id_for_label }}">Vocal Suplente:</label>
+      {{form.vocalSuplente1}}
+      {{form.vocalSuplente1.error}}
+    </div>
+    <div class="mb-3">
+      <label for="{{ form.vocalSuplente2.id_for_label }}">Vocal Suplente:</label>
+      {{form.vocalSuplente2}}
+      {{form.vocalSuplente2.error}}
+    </div>
+
+    <button class="btn btn-success">
+      {% include "icon/save.html" %}
+      Guardar
+    </button>
+  </form>
+</section>
+{% endblock %}

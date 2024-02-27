@@ -1,0 +1,40 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+
+
+<section class="card card-body">
+  <div class="d-flex justify-content-between">
+    <h1>Cambiar Contraseña</h1>
+      <a class="btn btn-outline-danger" href="{% url 'proyecto:lista' %}" style="height: 38px;">
+        {% include "icon/back.html" %}
+        Volver
+      </a>
+  </div>
+
+  {% if messages %}
+    {% for message in messages %}
+      <div class="alert alert-{{ message.tags }}" role="alert">{{ message }}</div>
+    {% endfor %}
+  {% endif %}
+
+  <form method="post">
+    {% csrf_token %}
+    <div class="col-8 mb-3">
+      <label for="id_old_password">Contraseña Actual:</label>
+      <input type="password" name="old_password" autocomplete="current-password" autofocus="" required="" id="id_old_password">
+    </div>
+    <div class="col-8 mb-3">
+      <label for="id_new_password1">Nueva Contraseña:</label>
+      <input type="password" name="new_password1" autocomplete="new-password" required="" aria-describedby="id_new_password1_helptext" id="id_new_password1">
+    </div>
+    <div class="col-8 mb-3">
+      <label for="id_new_password2">Confirmar Nueva Contraseña:</label>
+    <input type="password" name="new_password2" autocomplete="new-password" required="" id="id_new_password2">
+    </div>
+    <button type="submit" class="btn btn-outline-primary">Cambiar Contraseña</button>
+  </form>
+
+</section>
+{% endblock %}
