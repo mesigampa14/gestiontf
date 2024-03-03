@@ -15,7 +15,15 @@ from apps.sistema.models import Estudiante, Docente, Perfil
 
 # Create your views here.
 def home(request):
-    return render(request, 'home.html')
+    if request.user.is_authenticated:
+        tipo_usuario = usuario_tipo(request)
+        tipo_usuario = tipo_usuario.upper()
+    else:
+        tipo_usuario = ''
+
+    return render(request, 'home.html',{
+        'tipo_usuario': tipo_usuario,
+    })
 
 
 @login_required
@@ -128,7 +136,23 @@ def usuario_lista(request):
             form = PasswordChangeForm(request.user)
         return render(request, 'cambiar_contraseña.html', {'form': form})
 
+@login_required
+def ver_perfil(request):
+    return render(request, 'ver_perfil.html')
 
+
+def cambiar_contraseña(request):
+    if request.method == 'POST':
+        print(request.POST)
+        form = PasswordChangeForm(request.user, request.POST)
+        if form.is_valid():
+            user = form.save()
+            update_session_auth_hash(request, user)  # Actualizar la sesión del usuario si la contraseña cambió
+            messages.success(request, '¡Tu contraseña ha sido cambiada con éxito!')
+            return redirect('ver_perfil')
+    else:
+        form = PasswordChangeForm(request.user)
+    return render(request, 'cambiar_contraseña.html', {'form': form})
 
 @login_required
 def cerrar_sesion(request):
@@ -172,3 +196,14 @@ def buscarDocente(request):
         'docentes': docentes,
         'proyectoDocente': proyecto,
     })
+@login_required
+def usuario_tipo(request):
+    usuario = request.user
+
+    if hasattr(usuario, 'perfil'):
+        perfil = usuario.perfil
+        tipo_usuario = perfil.tipo_usuario
+    else:
+        tipo_usuario = 'superadmin'
+
+    return tipo_usuario

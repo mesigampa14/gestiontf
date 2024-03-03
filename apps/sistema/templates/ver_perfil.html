@@ -1,0 +1,57 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<section class="card card-body">
+
+  <div class="d-flex justify-content-between">
+    <h1>Perfil de Usuario</h1>
+  </div>
+
+  {% if messages %}
+    {% for message in messages %}
+      <div class="alert alert-{{ message.tags }}" role="alert">{{ message }}</div>
+    {% endfor %}
+  {% endif %}
+
+  <div class="container text-center">
+    <div class="row justify-content-center">
+      <div class="col-6">
+        <table class="table table-striped table-hover col-6">
+          <tbody>
+            <tr>
+              <td class="text-center">Nombre se Usuario</td>
+              <th class="text-center">{{request.user}}</th>
+            </tr>
+            <tr>
+              <td class="text-center">Apellido y Nombre</td>
+              <th class="text-center">{{request.user.perfil.apellido}}, {{request.user.perfil.nombre}}</th>
+            </tr>
+            <tr>
+              <td class="text-center">DNI</td>
+              <th class="text-center">{{request.user.perfil.dni}}</th>
+            </tr>
+            <tr>
+              <td class="text-center">Email</td>
+              <th class="text-center">{{request.user.perfil.email}}</th>
+            </tr>
+            <tr>
+              <td class="text-center">Fecha de Nacimiento</td>
+              <th class="text-center">{{request.user.perfil.nacimiento}}</th>
+            </tr>
+            <tr>
+              <td class="text-center">Domicilio</td>
+              <th class="text-center">{{request.user.perfil.domicilio}}</th>
+            </tr>
+            <tr>
+              <td class="text-center">Tipo de usuario</td>
+              <th class="text-center">{{request.user.perfil.get_tipo_usuario_display}}</th>
+            </tr>
+          </tbody>
+        </table>
+
+        <a class="btn btn-outline-primary" href="{% url 'cambiar_contraseña' %}">Cambiar Contraseña</a>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}

@@ -14,6 +14,7 @@ from apps.movimiento.models import Movimiento
 from apps.proyecto.form import ProyectoForm, ProyectoEstudianteForm, ProyectoDocenteForm
 from apps.proyecto.models import Proyecto, ProyectoEstudiante, ProyectoDocente
 from apps.sistema.models import Estudiante, Docente
+from apps.sistema.views import usuario_tipo
 from apps.tribunal.models import Tribunal
 
 
@@ -22,20 +23,42 @@ from apps.tribunal.models import Tribunal
 @login_required
 def proyecto_lista(request):
     usuario = request.user
-    tipo_usuario = ''
 
     if hasattr(usuario, 'perfil'):
         perfil = usuario.perfil
         tipo_usuario = perfil.tipo_usuario
         if tipo_usuario == 'docente':
-            proyectos = Proyecto.objects.filter(proyectodocente__docente__user__dni=perfil.dni).order_by('-id')
+            proyectos = Proyecto.objects.filter(
+                proyectodocente__docente__user__dni=perfil.dni,
+                proyectoestudiante__activo=True
+            ).order_by('-id')
         if tipo_usuario == 'estudiante':
-            proyectos = Proyecto.objects.filter(proyectoestudiante__estudiante__user__dni=perfil.dni).order_by('-id')
+            proyectos = Proyecto.objects.filter(
+                proyectoestudiante__estudiante__user__dni=perfil.dni,
+                proyectoestudiante__activo=True
+            ).order_by('-id')
         if tipo_usuario == 'comision':
             proyectos = Proyecto.objects.all().order_by('-id')
     else:
-        #tipo_usuario = 'superadmin'
         proyectos = Proyecto.objects.all().order_by('-id')
+
+    if request.method == 'POST':
+        buscar = request.POST.get('buscar', '')
+        estado = request.POST.get('estado', '')
+        fecha_inicio = request.POST.get('fecha_inicio', '')
+        fecha_fin = request.POST.get('fecha_fin', '')
+
+        if buscar:
+            proyectos = proyectos.filter(titulo__icontains=buscar)
+
+        if estado:
+            proyectos = proyectos.filter(estado=estado)
+
+        if fecha_inicio:
+            proyectos = proyectos.filter(presentacion__gte=fecha_inicio)
+
+        if fecha_fin:
+            proyectos = proyectos.filter(presentacion__lte=fecha_fin)
 
     return render(request, 'proyectosLista.html', {
         'proyectos': proyectos,
@@ -105,7 +128,7 @@ def proyecto_nuevo(request):
             return redirect(reverse('proyecto:lista'))
         else:
             return render(request, 'nuevo.html', {
-                'error': 'UPS! Algo no resultó como esperabamos'
+                'error': 'UPS! Algo no resultó como esperabamos',
             })
     else:
         form_proyecto = ProyectoForm(prefix='')
@@ -265,10 +288,13 @@ def proyecto_delEstudiante(request):
 def proyecto_addDocente(request):
     if request.method == 'POST':
         relacion = ProyectoDocente.objects.filter(proyecto=request.POST['proyecto'], docente=request.POST['docente'], activo=True)
-        #ver tambien de no dejar guardar con el mismo cargo de otro docente
+        relacion = ProyectoDocente.objects.filter(
+            Q(proyecto=request.POST['proyecto'], docente=request.POST['docente'], activo=True) |
+            Q(proyecto=request.POST['proyecto'], cargo=request.POST['cargo'], activo=True)
+        )
 
         if relacion:
-            messages.warning(request, 'El docente seleccionado ya se encuentra vinculado al proyecto.')
+            messages.warning(request, 'No es posible vincular el docente con ese cargo al proyecto.')
             return redirect(reverse('proyecto:ver', kwargs={'proy_id': request.POST['proyecto']}))
         else:
             proyecto = get_object_or_404(Proyecto, pk=request.POST['proyecto'])
