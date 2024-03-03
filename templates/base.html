@@ -31,22 +31,39 @@
         <li class="nav-item">
           <a class="nav-link" href="{% url 'proyecto:lista' %}">Proyectos</a>
         </li>
-        <li class="nav-item">
-          <a class="nav-link" href="{% url 'tribunal:lista' %}">Tribunal</a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link" href="{% url 'usuariosLista' %}">Usuarios</a>
-        </li>
-        <li class="nav-item">
-
-          <a class="nav-link" href="{% url 'logout' %}">Cerrar Sesión (
-            {% if user.perfil %}
-              {{ request.user.perfil.apellido }}, {{ request.user.perfil.nombre }}
-            {% else %}
-              {{ request.user }}
-            {% endif %}
-            )
+        {% if request.user.perfil.tipo_usuario == "comision" %}
+          <li class="nav-item">
+            <a class="nav-link" href="{% url 'tribunal:lista' %}">Tribunal</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="{% url 'usuariosLista' %}">Usuarios</a>
+          </li>
+        {% endif %}
+        <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+            {% include 'icon/user.html' %}
           </a>
+          <ul class="dropdown-menu" style="left: -130px !important;">
+            <li>
+              <span class="dropdown-item">
+              {% if user.perfil %}
+                {{ request.user.perfil.apellido }}, {{ request.user.perfil.nombre }}
+              {% else %}
+                {{ request.user }}
+              {% endif %}
+              </span>
+            </li>
+            <li>
+              {% if user.perfil %}
+                <span class="dropdown-item">{{ request.user.perfil.get_tipo_usuario_display }}</span>
+              {% else %}
+                <span class="dropdown-item">Administrador</span>
+              {% endif %}
+            </li>
+            <li><hr class="dropdown-divider"></li>
+            <li><a class="dropdown-item" href="{% url 'ver_perfil' %}">Perfil</a></li>
+            <li><a class="dropdown-item" href="{% url 'logout' %}">Cerrar Sesión</a></li>
+          </ul>
         </li>
         {% else %}
         <li class="nav-item">

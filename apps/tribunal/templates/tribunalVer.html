@@ -67,28 +67,42 @@
     Fecha de la Disposición: <strong>{{tribunal.disposicion_fecha|date:"d-m-Y"}}</strong>
   </div>
   <div class="mb-3">
-    Archivos:
+    Archivo:
     {% if tribunal.disposicion_archivo %}
-      <a href="{% url 'tribunal:archivo_tribunal' tribunal.id %}">Descargar</a>
+      <a class="btn btn-outline-primary" href="{% url 'tribunal:archivo_tribunal' tribunal.id %}">
+        {% include 'icon/file.html' %}
+        Descargar
+      </a>
     {% else %}
       <strong>No hay archivo adjunto.</strong>
     {% endif %}
   </div>
   <hr/>
-  <div class="mb-3">
-    Presidente: <strong>{{tribunal.presidente}}</strong>
-  </div>
-  <div class="mb-3">
-    Vocal Titular: <strong>{{tribunal.vocalTitular1}}</strong>
-  </div>
-  <div class="mb-3">
-    Vocal Titular: <strong>{{tribunal.vocalTitular2}}</strong>
-  </div>
-  <div class="mb-3">
-    Vocal Suplente: <strong>{{tribunal.vocalSuplente1}}</strong>
-  </div>
-  <div class="mb-3">
-    Vocal Suplente: <strong>{{tribunal.vocalSuplente2}}</strong>
+
+  <div class="container mt-3 mb-3">
+    <div class="row justify-content-center">
+      <div class="col-6 mb-3 text-center">
+        Presidente: <strong>{{tribunal.presidente.user.apellido}}, {{tribunal.presidente.user.nombre}}</strong>
+      </div>
+    </div>
+    <div class="row justify-content-center">
+      <div class="col-6 mb-3 text-center">
+        <p>
+          Vocal Titular: <strong>{{tribunal.vocalTitular1.user.apellido}}, {{tribunal.vocalTitular1.user.nombre}}</strong>
+        </p>
+        <p>
+          Vocal Titular: <strong>{{tribunal.vocalTitular2.user.apellido}}, {{tribunal.vocalTitular2.user.nombre}}</strong>
+        </p>
+      </div>
+      <div class="col-6 mb-3 text-center">
+        <p>
+          Vocal Suplente: <strong>{{tribunal.vocalSuplente1.user.apellido}}, {{tribunal.vocalSuplente1.user.nombre}}</strong>
+        </p>
+        <p>
+          Vocal Suplente: <strong>{{tribunal.vocalSuplente2.user.apellido}}, {{tribunal.vocalSuplente2.user.nombre}}</strong>
+        </p>
+      </div>
+    </div>
   </div>
 
   <hr/>
@@ -96,11 +110,10 @@
   <table class="table table-striped table-hover">
   <thead>
     <tr>
-      <th scope="col">Etapa</th>
+      <th scope="col">Título</th>
+      <th scope="col">Fecha</th>
       <th scope="col">Estado</th>
-      <th scope="col">Fecha y Hora</th>
-      <th scope="col">Archivo</th>
-      <th scope="col">Observación</th>
+      <th scope="col">Detalle</th>
     </tr>
   </thead>
   <tbody>
@@ -108,23 +121,22 @@
       {% for proyecto in proyectos %}
 
       <tr>
-        <th scope="row">{{proyecto.id}}</th>
-        <td>{{proyecto.titulo}}</td>
+        <th>{{proyecto.titulo}}</th>
         <td>{{proyecto.presentacion|date:"d-m-Y"}}</td>
         <td>{{proyecto.get_etapa_display}}
            {% if proyecto.estado == 'rechazado' %}
-        <span class="badge text-bg-danger">{{ proyecto.get_estado_display }}</span>
+            <span class="badge text-bg-danger">{{ proyecto.get_estado_display }}</span>
           {% elif proyecto.estado == 'observado' %}
-        <span class="badge text-bg-warning">{{ proyecto.get_estado_display }}</span>
+            <span class="badge text-bg-warning">{{ proyecto.get_estado_display }}</span>
           {% elif proyecto.estado == 'aceptado' %}
-        <span class="badge text-bg-success">{{ proyecto.get_estado_display }}</span>
+            <span class="badge text-bg-success">{{ proyecto.get_estado_display }}</span>
           {% else %}
-        <span class="badge text-bg-primary">{{ proyecto.get_estado_display }}</span>
+            <span class="badge text-bg-primary">{{ proyecto.get_estado_display }}</span>
           {% endif %}
         </td>
         <td>
-          <a class="btn btn-outline-primary btn-sm" href="{% url 'proyecto:ver' proyecto.id %}" style="height: 38px">
-            Abrir
+          <a class="btn btn-outline-primary btn-sm" href="{% url 'proyecto:ver' proyecto.id %}">
+            {% include 'icon/eye.html' %}
           </a>
         </td>
       </tr>
